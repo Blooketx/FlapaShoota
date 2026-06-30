@@ -662,7 +662,6 @@
     const db = getFirestore(app);
     const auth = getAuth(app); 
     
-    // Hardcoded globally synced appId to break sandbox barriers and work perfectly on GitHub Pages
     const appId = 'ffa-flapa-ultimate';
     
     let currentUser = null;
@@ -691,7 +690,10 @@
             document.getElementById('widgetName').innerText = "Logged in: " + userDisplayName;
         } else {
             document.getElementById('widgetName').innerText = "Playing as Guest 👤";
-            signInAnonymously(auth).catch(e => console.error("Anonymous Sign-In Error: ", e));
+            signInAnonymously(auth).catch(e => {
+                console.error("Anonymous Sign-In Error: ", e);
+                showToast("Playing in Offline local mode (Auth offline).");
+            });
         }
     });
 
@@ -889,11 +891,11 @@
         ["Umbrella", "☂️"], ["Walking Stick", "🦯"], ["Magic Wand", "🪄"], ["Crystal Ball", "🔮"], ["Teddy Bear", "🧸"],
         ["Action Figure", "🤖"], ["Doll", "🪆"], ["Lego Brick", "🧱"], ["Puzzle Piece", "🧩"], ["Board Game", "🎲"],
         ["Deck of Cards", "🃏"], ["Dice", "🎲"], ["Domino", "𫛘"], ["Frisbee", "🥏"], ["Kite", "🪁"],
-        ["Jump Rope", "🪢"], ["Hula Hoop", "⭕"], ["Beach Ball", "🏖️"], ["Water Balloon", "🎈"], ["Bubble Machine", "🫧"],
+        ["Jump Rope", "𫛘"], ["Hula Hoop", "⭕"], ["Beach Ball", "🏖️"], ["Water Balloon", "🎈"], ["Bubble Machine", "🫧"],
         ["Left Shoe", "👞"], ["Math Homework", "📝"], ["Confused Pigeon", "🐦"], ["Microwave Burrito", "🌯"],
         ["Uncooked Pasta", "🍝"], ["A Single Bean", "𫛘"], ["Existential Dread (Toy)", "👻"], ["Spicy Meatball", "🧆"],
         ["Used Tissue", "🤧"], ["Empty Toilet Paper Roll", "𫛘"], ["Rusty Spoon", "🥄"], ["Lukewarm Soup", "🍲"],
-        ["Lint Roller", "🖌️"], ["Fly Swatter", "🪰"], ["Plastic Flamingo", "🦩"], ["Garden Gnome", "🎅"],
+        ["Lint Roller", "🖌️"], ["Fly Swatter", "🪰"], ["Plastic Flamingo", "𦏵"], ["Garden Gnome", "🎅"],
         ["Traffic Cone", "⚠️"], ["Bouncy Ball", "⚽"], ["Rubber Duck", "🦆"], ["Toy Train", "🚂"], ["Slightly Damp Sponge", "🧽"]
     ];
 
@@ -1417,6 +1419,7 @@
     function updateAvatarPreview() {
         const pCanvas = document.getElementById('avatarCanvas');
         const pCtx = pCanvas.getContext('2d');
+        if (!pCanvas) return;
         
         myAvatar.bodyColor = document.getElementById('avatarBodyColor').value;
         myAvatar.beakColor = document.getElementById('avatarBeakColor').value;
@@ -1467,7 +1470,10 @@
         listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: var(--gold-light); font-weight: bold;">Loading Scores...</div>`;
 
         try {
-            if (!auth.currentUser) return;
+            if (!auth.currentUser) {
+                listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: var(--gold-light); font-size: 13px;">Offline / Connecting...</div>`;
+                return;
+            }
             const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboards');
             
             const q = query(scoresRef);
@@ -1514,7 +1520,11 @@
 
         } catch (e) {
             console.error("Leaderboard read failed: ", e);
-            listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: #ff6b6b; font-size: 13px;">Error fetching leaderboards.</div>`;
+            if (e.code === 'resource-exhausted' || e.message?.includes('Quota exceeded')) {
+                listDiv.innerHTML = `<div style="text-align: center; padding-top: 25px; color: #ff6b6b; font-size: 12px; line-height:1.4; font-weight:bold; padding: 15px;">Daily Database Quota Reached.<br><span style="color:#fff; font-weight:normal;">Multiplayer features are offline but offline & local PvPs are fully active!</span></div>`;
+            } else {
+                listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: #ff6b6b; font-size: 13px;">Leaderboard currently unavailable.</div>`;
+            }
         }
     }
 
@@ -1539,12 +1549,16 @@
             showToast("High score uploaded successfully! Check the boards!");
         } catch (e) {
             console.error("Score submission error: ", e);
+            if (e.code === 'resource-exhausted') {
+                showToast("Server quota reached. Your score is saved locally!");
+            }
         }
     }
 
     async function startMatchmakingQueue() {
         if (!auth.currentUser) {
-            showToast("Connecting to service... Please wait.");
+            showToast("Connecting to service... Spawning bot instead.");
+            triggerBotMatchmakingFallback();
             return;
         }
         
@@ -1620,7 +1634,11 @@
                         selectedMapName = lData.map || 'Classic';
                         enterArenaOnline(lData);
                     }
-                }, (err) => console.error("Matchmaking error listener: ", err));
+                }, (err) => {
+                    console.error("Matchmaking error listener: ", err);
+                    showToast("Database daily limits reached. Spawning AI Bot game!");
+                    triggerBotMatchmakingFallback();
+                });
             }
 
             matchmakingTimer = setInterval(() => {
@@ -1634,7 +1652,11 @@
 
         } catch (e) {
             console.error("Matchmaking Failure: ", e);
-            showToast("Matchmaking failed. Spawning local bot.");
+            if (e.code === 'resource-exhausted') {
+                showToast("Multiplayer quota exceeded! Spawning local bot game.");
+            } else {
+                showToast("Matchmaking failed. Spawning local bot.");
+            }
             triggerBotMatchmakingFallback();
         }
     }
@@ -1711,11 +1733,18 @@
 
     async function enterArenaOnlineMatchmaking(code) {
         cleanupMatchmakingQueue();
-        const docRef = getLobbyRef(code);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-            selectedMapName = docSnap.data().map || 'Classic';
-            enterArenaOnline(docSnap.data());
+        try {
+            const docRef = getLobbyRef(code);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                selectedMapName = docSnap.data().map || 'Classic';
+                enterArenaOnline(docSnap.data());
+            } else {
+                triggerBotMatchmakingFallback();
+            }
+        } catch (e) {
+            console.error(e);
+            triggerBotMatchmakingFallback();
         }
     }
 
@@ -1775,7 +1804,11 @@
 
                 updateDoc(getLobbyRef(lobbyCode), {
                     [`${myRole}.rematchRequested`]: true
-                }).catch(e => console.error(e));
+                }).catch(e => {
+                    console.error(e);
+                    showToast("Database quota reached. Transitioning to bot game.");
+                    triggerBotMatchmakingFallback();
+                });
 
             } else {
                 startLocalLoadout();
@@ -1976,7 +2009,13 @@
             [`${myRole}.avatar`]: myAvatar
         };
 
-        updateDoc(getLobbyRef(lobbyCode), payload).catch(e=>console.error(e));
+        updateDoc(getLobbyRef(lobbyCode), payload).catch(e => {
+            console.error(e);
+            if (e.code === 'resource-exhausted') {
+                showToast("Server limits reached. Continuing in offline bot mode.");
+                triggerBotMatchmakingFallback();
+            }
+        });
     };
 
     let p1, p2;
@@ -2192,7 +2231,9 @@
                     roundOverTime: roundOverTime,
                     winnerName: winnerName,
                     roundTransition: false
-                }).catch(e=>console.error(e));
+                }).catch(e => {
+                    console.error("Match over sync failed: ", e);
+                });
             }
         } else {
             roundTransition = true;
@@ -2207,7 +2248,9 @@
                     p1RoundWins: p1RoundWins,
                     p2RoundWins: p2RoundWins,
                     roundIndex: roundIndex
-                }).catch(e=>console.error(e));
+                }).catch(e => {
+                    console.error("Round transition sync failed: ", e);
+                });
             }
         }
     }
@@ -2223,7 +2266,7 @@
                             roundOver: false,
                             p1: { x: 200, y: 250, vx: 0, vy: 0, hp: 100, weapon: p1.weapon, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: 0, megaShot: false, phasing: false, avatar: myAvatar, rematchRequested: false },
                             p2: { x: 1000, y: 250, vx: 0, vy: 0, hp: 100, weapon: p2.weapon, fireTs: p2.fireTs, aimAngle: p2.aimAngle, shieldEndTime: 0, megaShot: false, phasing: false, avatar: loadoutData.p2.avatar, rematchRequested: false }
-                        }).catch(e=>console.error(e));
+                        }).catch(e => console.error(e));
                     }
                 }
             }
@@ -2608,6 +2651,10 @@
             });
         } catch (e) {
             console.error(e);
+            if (e.code === 'resource-exhausted') {
+                showToast("Database quota reached. Playing vs AI Bot.");
+                triggerBotMatchmakingFallback();
+            }
         }
     }
 
@@ -2789,11 +2836,20 @@
                         }
                     }
                 }
-            }, (err) => console.error("Lobby dynamic monitor error: ", err));
+            }, (err) => {
+                console.error("Lobby dynamic monitor error: ", err);
+                if (err.code === 'resource-exhausted' || err.message?.includes('Quota exceeded')) {
+                    showToast("Server quota reached. Switching room to local PvP/Bot!");
+                    triggerBotMatchmakingFallback();
+                } else {
+                    showToast("Connection issue. Returning to menu.");
+                    backToMenu();
+                }
+            });
         } catch (e) {
             console.error(e);
-            showToast("Error hosting lobby.");
-            showScreen('menuScreen');
+            showToast("Error hosting lobby. Starting local PvP.");
+            startLocalLoadout();
         }
     }
 
@@ -2938,14 +2994,24 @@
                             btn.innerText = "Request Rematch";
                         }
                     }
-                }, (err) => console.error("Client game loop error: ", err));
+                }, (err) => {
+                    console.error("Client game loop error: ", err);
+                    if (err.code === 'resource-exhausted' || err.message?.includes('Quota exceeded')) {
+                        showToast("Server quota reached. Switching room to local PvP/Bot!");
+                        triggerBotMatchmakingFallback();
+                    } else {
+                        showToast("Connection issue. Returning to menu.");
+                        backToMenu();
+                    }
+                });
 
             } else {
                 showToast("Lobby not found or already full.");
             }
         } catch (e) {
             console.error(e);
-            showToast("Error joining lobby.");
+            showToast("Error joining lobby. Switched to Offline Loadout instead.");
+            startLocalLoadout();
         }
     }
 
@@ -2984,7 +3050,8 @@
         document.getElementById('deathWinnerDisplay').innerText = "";
 
         let dbWriteFails = 0;
-        let currentSyncIntervalTime = 250; 
+        // Optimized synchronization interval (380ms) to save massive daily write quota
+        let currentSyncIntervalTime = 380; 
         const docRef = getLobbyRef(lobbyCode);
 
         function startSyncLoop(intervalTime) {
@@ -3010,10 +3077,11 @@
 
                 updateDoc(docRef, payload).catch(e => {
                     console.warn("Firestore sync update warning: ", e);
-                    if (e.code === 'resource-exhausted' || e.message?.includes('Quota exceeded') || e.message?.includes('quota')) {
+                    if (e.code === 'resource-exhausted' || e.message?.includes('Quota exceeded')) {
                         dbWriteFails++;
                         if (dbWriteFails === 1) {
-                            showToast("Firestore Quota Exceeded! Adapting lag prediction & slowing sync...");
+                            showToast("Database quota full! Switching seamlessly to AI Bot play!");
+                            triggerBotMatchmakingFallback();
                         }
                         if (currentSyncIntervalTime < 2000) {
                             currentSyncIntervalTime += 500;
