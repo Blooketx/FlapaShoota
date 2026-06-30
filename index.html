@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flapashoota Pro</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Press+Start+2P&display=swap');
+
+        :root {
+            --bg-color: #21003b; /* Deep Cyber Purple */
+            --text-color: #ffffff;
+            --menu-bg: rgba(25, 0, 45, 0.9);
+            --gold-primary: #FFD700; /* Yellowish Gold */
+            --gold-light: #FFF59D;
+            --gold-dark: #B8860B;
+            --btn-bg: #120024;
+            --btn-text: #FFD700;
+        }
+        
+        body.dark-mode {
+            --bg-color: #12001f;
+            --menu-bg: rgba(15, 0, 30, 0.95);
+            --btn-bg: #090014;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.4s ease, color 0.4s ease;
+            background-image: radial-gradient(rgba(255, 215, 0, 0.1) 2px, transparent 2px);
+            background-size: 32px 32px;
+        }
+
+        canvas {
+            display: block;
+            background: #090014;
+            border: 6px solid var(--gold-primary);
+            border-radius: 12px;
+            box-shadow: 0 15px 45px rgba(255, 215, 0, 0.35);
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
+            transition: all 0.3s ease;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--menu-bg);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 3px solid var(--gold-primary);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            width: 420px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 20;
+        }
+
+        .active { display: block; }
+        
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-weight: 900;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold-primary);
+            margin-top: 0;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--gold-primary);
+            padding-bottom: 10px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        h2, h3, h4 { 
+            margin-top: 0; 
+            font-weight: 700;
+            color: var(--text-color);
+            text-transform: uppercase;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin: 12px 0;
+            font-size: 14px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: 2px solid var(--gold-primary);
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        button:hover:not(:disabled) { 
+            background-color: var(--gold-primary);
+            color: #000;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+            transform: translateY(-3px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #777;
+        }
+
+        .stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--gold-primary);
+            background: var(--menu-bg);
+            padding: 10px 20px;
+            border: 2px solid var(--gold-primary);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            z-index: 10;
+            line-height: 1.5;
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .online-controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            font-family: 'Montserrat', sans-serif;
+            border: 2px solid var(--gold-dark);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--gold-primary);
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .online-controls button {
+            width: auto;
+            margin: 0;
+            padding: 0 20px;
+        }
+        
+        /* HIDDEN CONSOLE STYLES */
+        #cheatConsoleContainer {
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            z-index: 100;
+        }
+        #consoleInputArea {
+            display: none;
+            background: var(--menu-bg);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--gold-primary);
+            display: flex;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+        }
+        #consoleInputArea input { width: 250px; color: #fff; }
+        #consoleInputArea button { width: auto; margin: 0; }
+
+        /* KEYBIND SETTINGS STYLES */
+        .keybind-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: bold; }
+        .keybind-btn { width: 100px; padding: 8px; font-size: 12px; margin: 0; }
+
+        /* LOADOUT & MAP GRID STYLES */
+        .weapon-options { display: flex; flex-direction: column; gap: 8px; margin: 15px 0; }
+        .weapon-option { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            background: rgba(255, 215, 0, 0.1); 
+            padding: 10px 15px; 
+            border-radius: 8px; 
+            border: 1px solid var(--gold-dark);
+            cursor: pointer; 
+            font-size: 15px; 
+            text-align: left; 
+            line-height: 1.3;
+            transition: all 0.2s ease;
+        }
+        .weapon-option:hover {
+            background: rgba(255, 215, 0, 0.25);
+            border-color: var(--gold-primary);
+        }
+        .weapon-option input { cursor: pointer; margin: 0; transform: scale(1.2); }
+        
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+            background: rgba(0,0,0,0.4);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .map-card {
+            border: 2px solid #555;
+            background: rgba(0,0,0,0.6);
+            border-radius: 6px;
+            padding: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 11px;
+            transition: transform 0.2s;
+        }
+        .map-card:hover {
+            transform: scale(1.05);
+        }
+
+        /* CUSTOM LEVEL EDITOR TOOLBAR */
+        .editor-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .editor-tool {
+            flex: 1;
+            padding: 8px;
+            font-size: 11px;
+            margin: 0;
+            min-width: 70px;
+        }
+
+        /* GD CUSTOM COLOR PALETTES */
+        .color-grid {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        .color-swatch.selected {
+            border: 3px solid var(--gold-primary);
+            box-shadow: 0 0 10px var(--gold-primary);
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, transparent, var(--gold-primary), transparent);
+            margin: 25px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Secretly clicking this HUD triggers the console! -->
+    <div class="stats" id="hud" onclick="toggleConsole()">Score: 0</div>
+
+    <!-- HIDDEN CONSOLE -->
+    <div id="cheatConsoleContainer">
+        <div id="consoleInputArea" style="display: none;">
+            <input type="text" id="consoleInput" placeholder="Enter command..." onkeydown="handleConsoleKey(event)">
+            <button onclick="runCommand()">Run</button>
+        </div>
+    </div>
+
+    <div id="menuScreen" class="ui-layer active">
+        <h1>Flapashoota Pro</h1>
+        
+        <!-- PROFILE CORNER PANEL -->
+        <div style="background: rgba(0,0,0,0.4); padding: 12px; border: 1.5px solid var(--gold-dark); border-radius: 8px; margin-bottom: 15px;">
+            <div id="profileHeader" style="font-weight: bold; margin-bottom: 4px; color: var(--gold-primary); font-size: 14px;">GUEST MODE</div>
+            <div id="profileStats" style="font-size: 12px; margin-bottom: 10px; opacity: 0.85;">Wins: 0 | Losses: 0 | W/L: 0.00</div>
+            <button onclick="showScreen('authScreen')" style="padding: 6px; font-size: 12px; margin: 0;">Login or Create Profile</button>
+        </div>
+
+        <input type="text" id="playerNameInput" placeholder="Enter Name" maxlength="12" style="width: 100%; text-align: center; text-transform: uppercase;">
+        <button onclick="startGame()">Play Pipes (1P)</button>
+        <button onclick="startLocalLoadout()">PvP Arena (Local 1v1)</button>
+        
+        <div style="display: flex; gap: 8px;">
+            <button onclick="showScreen('avatarScreen')" style="flex: 1; font-size: 11px;">Avatar Editor</button>
+            <button onclick="openLevelEditor()" style="flex: 1; font-size: 11px; background: #3b0066;">Level Editor</button>
+        </div>
+
+        <hr>
+        
+        <button onclick="hostOnlineGame()">Host Online 1v1</button>
+        <div class="online-controls">
+            <input type="text" id="joinCode" placeholder="Code" maxlength="4">
+            <button onclick="joinOnlineGame()">Join</button>
+        </div>
+
+        <hr>
+        <button onclick="showScreen('settingsScreen')">Settings</button>
+    </div>
+
+    <!-- PROFILE ACCOUNT SCREEN -->
+    <div id="authScreen" class="ui-layer">
+        <h2>Secure Login</h2>
+        <button onclick="loginWithGoogle()" style="background: #db4437; border-color: #c53023; color: white;">Sign in with Google</button>
+        <div style="margin: 15px 0; font-size: 12px; font-weight: bold;">- OR USE PIN METHOD -</div>
+        <input type="text" id="authUsername" placeholder="Enter Username" maxlength="12">
+        <input type="password" id="authPin" placeholder="4-Digit PIN Code" maxlength="4" style="text-align: center; letter-spacing: 8px;">
+        <button onclick="handlePinLogin()" style="background: #2ecc71; border-color: #27ae60;">Submit PIN Login/Register</button>
+        <button onclick="logoutProfile()" id="logoutBtn" style="background: #e74c3c; border-color: #c0392b; display: none; color: #fff;">Logout Profile</button>
+        <button onclick="showScreen('menuScreen')" style="background: #555; border-color: #444;">Back</button>
+    </div>
+
+    <!-- AVATAR CUSTOMIZER SCREEN -->
+    <div id="avatarScreen" class="ui-layer" style="width: 480px;">
+        <h2>Avatar customizer</h2>
+        
+        <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; height: 100px;">
+            <canvas id="previewCanvas" width="100" height="100" style="border: none; box-shadow: none; background: transparent;"></canvas>
+        </div>
+
+        <div style="text-align: left; font-size: 12px;">
+            <label style="font-weight: bold; color: var(--gold-primary);">Body Shape:</label>
+            <select id="avBody" onchange="updateAvatarPreview()">
+                <option value="round">GD Circle Shape</option>
+                <option value="square">GD Cube Shape</option>
+                <option value="triangle">GD Dart Shape</option>
+                <option value="spike">GD Spike Shape</option>
+            </select>
+
+            <label style="font-weight: bold; color: var(--gold-primary);">Eyes style:</label>
+            <select id="avEyes" onchange="updateAvatarPreview()">
+                <option value="happy">Happy GD Eye</option>
+                <option value="shades">GD Shades</option>
+                <option value="angry">Angry Eye</option>
+                <option value="cute">Cute Eye</option>
+            </select>
+
+            <label style="font-weight: bold; color: var(--gold-primary);">Primary Colors:</label>
+            <div class="color-grid" id="primaryColorGrid"></div>
+
+            <label style="font-weight: bold; color: var(--gold-primary);">Secondary Colors:</label>
+            <div class="color-grid" id="secondaryColorGrid"></div>
+        </div>
+
+        <button onclick="saveAvatarConfig()" style="background: #2ecc71; margin-top: 15px; border-color: #27ae60;">Save Outfit</button>
+        <button onclick="showScreen('menuScreen')" style="background: #777; border-color: #666;">Back</button>
+    </div>
+
+    <!-- LEVEL EDITOR PANEL -->
+    <div id="editorScreen" class="ui-layer" style="width: 500px;">
+        <h2>Creative Level Editor</h2>
+        <div class="editor-bar">
+            <button class="editor-tool" id="tool_obs" onclick="selectEditorTool('obs')" style="background: #21003b;">Platform</button>
+            <button class="editor-tool" id="tool_bounce" onclick="selectEditorTool('bounce')" style="background: #FF8C00;">BouncePad</button>
+            <button class="editor-tool" id="tool_lava" onclick="selectEditorTool('lava')" style="background: #ff3300;">Lava Block</button>
+            <button class="editor-tool" id="tool_water" onclick="selectEditorTool('water')" style="background: #3498db;">Water Area</button>
+            <button class="editor-tool" id="tool_pipe" onclick="selectEditorTool('pipe')" style="background: #2ecc71;">Telepipe</button>
+            <button class="editor-tool" id="tool_erase" onclick="selectEditorTool('erase')" style="background: #777;">Erase Tool</button>
+        </div>
+        <p style="font-size: 11px; margin: 10px 0; color: #ccc;">* Click inside the 1200x800 background screen to place down block types!</p>
+        <button onclick="saveCustomMap()" style="background: #2ecc71; border-color: #27ae60; margin-top: 10px;">Save Map Layout</button>
+        <button onclick="testCustomMap()" style="background: #9b59b6; border-color: #8e44ad;">Playtest Now</button>
+        <button onclick="exitLevelEditor()" style="background: #e74c3c; border-color: #c0392b;">Exit Editor</button>
+    </div>
+
+    <!-- LOADOUT SCREEN -->
+    <div id="loadoutScreen" class="ui-layer" style="width: 750px;">
+        <h2>Choose Loadout & Map</h2>
+        
+        <!-- MAP SELECTOR (8 Maps with Previews & Voting) -->
+        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid var(--gold-dark); margin-bottom: 20px;">
+            <label style="font-weight: bold; color: var(--gold-primary); font-size: 16px; display: block; text-align: left; margin-bottom: 8px;">VOTE FOR A MAP (Randomized pool):</label>
+            <div id="mapGrid" class="map-grid"></div>
+        </div>
+
+        <!-- Local 1v1 Loadout Fields -->
+        <div id="localLoadoutDiv" style="display: flex; gap: 30px; text-align: left;">
+            <div style="flex: 1;" id="localP1Loadout"></div>
+            <div style="flex: 1;" id="localP2Loadout"></div>
+        </div>
+
+        <!-- Online 1v1 Loadout Fields -->
+        <div id="onlineLoadoutDiv" style="display: none; text-align: left;">
+            <div id="myOnlineLoadout"></div>
+            <h4 style="margin-top: 25px; text-align: center; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 2px solid var(--gold-dark);">
+                Opponent Status: <br><span id="oppReadyText" style="color: var(--gold-primary); font-size: 24px; display: block; margin-top: 10px;">Choosing Weapon...</span>
+            </h4>
+        </div>
+    </div>
+
+    <!-- NEW MULTIPLAYER LOBBY SCREEN -->
+    <div id="lobbyScreen" class="ui-layer" style="width: 480px;">
+        <h2>Online Lobby</h2>
+        <h3 style="color: var(--gold-primary); font-size: 24px; margin-bottom: 25px;">Code: <span id="lobbyScreenCode" style="color: #fff;">----</span></h3>
+        
+        <div style="display: flex; justify-content: space-between; margin: 25px 0; background: rgba(0,0,0,0.4); border: 2px solid var(--gold-primary); padding: 20px; border-radius: 12px;">
+            <div style="text-align: left; flex: 1;">
+                <h3 style="margin: 0 0 8px 0; font-size: 18px; color: var(--gold-primary);">P1: <span id="lobbyP1Name" style="color: #fff;">Host</span></h3>
+                <span id="lobbyP1Status" style="font-weight: bold; color: #e74c3c;">Not Ready</span>
+            </div>
+            <div style="text-align: right; flex: 1; border-left: 2px dashed var(--gold-dark); padding-left: 15px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 18px; color: var(--gold-primary);">P2: <span id="lobbyP2Name" style="color: #fff;">Waiting...</span></h3>
+                <span id="lobbyP2Status" style="font-weight: bold; color: #e74c3c;">Not Ready</span>
+            </div>
+        </div>
+
+        <button id="btnLobbyReady" onclick="toggleLobbyReady()">Ready Up!</button>
+        <button onclick="cancelLobby()" style="background: #e74c3c; border-color: #c0392b; color: #fff;">Leave Lobby</button>
+    </div>
+
+    <!-- New Waiting Screen for Host -->
+    <div id="waitingScreen" class="ui-layer">
+        <h2>Lobby Code: <br><span id="lobbyCodeDisplay" style="color: var(--gold-primary); font-size: 36px; display: block; margin: 15px 0;">----</span></h2>
+        <p style="font-weight: bold; font-size: 18px;">Waiting for opponent to join...</p>
+        <button onclick="cancelLobby()" style="margin-top: 25px; background: #e74c3c; border-color: #c0392b; color: #fff;">Cancel</button>
+    </div>
+
+    <!-- SETTINGS SCREEN WITH KEYBINDS -->
+    <div id="settingsScreen" class="ui-layer" style="width: 500px;">
+        <h2>Settings</h2>
+        <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+        
+        <div style="display: flex; gap: 30px; text-align: left; margin: 25px 0;">
+            <div style="flex: 1;">
+                <h3 style="margin-bottom: 15px; font-size: 16px; border-bottom: 1px solid var(--gold-primary); padding-bottom: 5px; color: var(--gold-primary);">Player 1 (Online/Local)</h3>
+                <div class="keybind-row"><span>Left:</span> <button id="btn_p1_left" class="keybind-btn" onclick="startBind('p1','left')">KeyA</button></div>
+                <div class="keybind-row"><span>Right:</span> <button id="btn_p1_right" class="keybind-btn" onclick="startBind('p1','right')">KeyD</button></div>
+                <div class="keybind-row"><span>Jump:</span> <button id="btn_p1_jump" class="keybind-btn" onclick="startBind('p1','jump')">KeyW</button></div>
+                <div class="keybind-row"><span>Phase:</span> <button id="btn_p1_down" class="keybind-btn" onclick="startBind('p1','down')">KeyS</button></div>
+                <div class="keybind-row"><span>Ability:</span> <button id="btn_p1_special" class="keybind-btn" onclick="startBind('p1','special')">KeyF</button></div>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="margin-bottom: 15px; font-size: 16px; border-bottom: 1px solid var(--gold-primary); padding-bottom: 5px; color: var(--gold-primary);">Player 2 (Local Only)</h3>
+                <div class="keybind-row"><span>Left:</span> <button id="btn_p2_left" class="keybind-btn" onclick="startBind('p2','left')">ArrowLeft</button></div>
+                <div class="keybind-row"><span>Right:</span> <button id="btn_p2_right" class="keybind-btn" onclick="startBind('p2','right')">ArrowRight</button></div>
+                <div class="keybind-row"><span>Jump:</span> <button id="btn_p2_jump" class="keybind-btn" onclick="startBind('p2','jump')">ArrowUp</button></div>
+                <div class="keybind-row"><span>Phase:</span> <button id="btn_p2_down" class="keybind-btn" onclick="startBind('p2','down')">ArrowDown</button></div>
+                <div class="keybind-row"><span>Ability:</span> <button id="btn_p2_special" class="keybind-btn" onclick="startBind('p2','special')">Slash</button></div>
+            </div>
+        </div>
+
+        <button onclick="showScreen('menuScreen')">Back</button>
+    </div>
+
+    <div id="deathScreen" class="ui-layer">
+        <h2 style="font-size: 32px; color: var(--gold-primary); text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">Game Over</h2>
+        <h3 id="deathWinnerDisplay" style="color: #fff; margin-bottom: 20px; font-size: 24px; font-weight: bold;"></h3>
+        <button onclick="handleRespawn()">Play Again</button>
+        <button onclick="backToMenu()">Main Menu</button>
+    </div>
+
+    <!-- Arena is 1200x800 -->
+    <canvas id="gameCanvas" width="1200" height="800"></canvas>
+
+<script type="module">
+    // --- CANVAS & CONTEXT SETUP ---
+    // Moved to the top to prevent ReferenceError during early script execution
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- FIREBASE SETUP ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAx5rX_hLYVn7YkISuS1U2XKJXEbhry-Yo",
+        authDomain: "ffa-flapa.firebaseapp.com",
+        projectId: "ffa-flapa",
+        storageBucket: "ffa-flapa.firebasestorage.app",
+        messagingSenderId: "536956526616",
+        appId: "1:536956526616:web:6d23f8136fddfbfbbb236d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'ffa-flapa';
+    
+    let currentUser = null;
+    signInAnonymously(auth).then(u => { currentUser = u.user; loadLocalProfile(); }).catch(e => console.error(e));
+
+    // Multiplayer State
+    let isOnline = false;
+    let isHost = false;
+    let lobbyCode = "";
+    let syncInterval = null;
+    let unsubscribeLobby = null;
+
+    // Expose functions to window
+    window.startGame = startGame;
+    window.startLocalLoadout = startLocalLoadout;
+    window.showScreen = showScreen;
+    window.toggleDarkMode = toggleDarkMode;
+    window.handleRespawn = handleRespawn;
+    window.backToMenu = backToMenu;
+    window.hostOnlineGame = hostOnlineGame;
+    window.joinOnlineGame = joinOnlineGame;
+    window.cancelLobby = cancelLobby;
+    window.toggleLobbyReady = toggleLobbyReady;
+
+    // Account system exposures
+    window.loginWithGoogle = loginWithGoogle;
+    window.handlePinLogin = handlePinLogin;
+    window.logoutProfile = logoutProfile;
+
+    // Avatar customizer exposures
+    window.updateAvatarPreview = updateAvatarPreview;
+    window.saveAvatarConfig = saveAvatarConfig;
+    window.setPrimaryColor = setPrimaryColor;
+    window.setSecondaryColor = setSecondaryColor;
+
+    // Level Editor exposures
+    window.openLevelEditor = openLevelEditor;
+    window.selectEditorTool = selectEditorTool;
+    window.saveCustomMap = saveCustomMap;
+    window.testCustomMap = testCustomMap;
+    window.exitLevelEditor = exitLevelEditor;
+    
+    // --- USER PROFILE & ACCOUNT SYSTEM ---
+    let myProfile = {
+        username: "Guest",
+        pin: "",
+        wins: 0,
+        losses: 0,
+        avatar: {
+            body: 'round',
+            eyes: 'happy',
+            primary: '#FFD700',
+            secondary: '#4a148c'
+        }
+    };
+
+    function loadLocalProfile() {
+        let loaded = localStorage.getItem('flapashoota_profile');
+        if (loaded) {
+            myProfile = JSON.parse(loaded);
+            updateProfileUI();
+        }
+    }
+
+    function updateProfileUI() {
+        document.getElementById('profileHeader').innerText = myProfile.username.toUpperCase();
+        let total = myProfile.wins + myProfile.losses;
+        let ratio = total > 0 ? (myProfile.wins / total).toFixed(2) : "0.00";
+        document.getElementById('profileStats').innerText = `Wins: ${myProfile.wins} | Losses: ${myProfile.losses} | W/L: ${ratio}`;
+        document.getElementById('playerNameInput').value = myProfile.username;
+    }
+
+    async function loginWithGoogle() {
+        const provider = new GoogleAuthProvider();
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            currentUser = user;
+            
+            // Persist profile in Firestore obeying strict path: Rule 1
+            const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile');
+            const snap = await getDoc(profileRef);
+            if (snap.exists()) {
+                myProfile = snap.data();
+            } else {
+                myProfile = {
+                    username: sanitizeName(user.displayName || "GoogleUser"),
+                    pin: "GGLE",
+                    wins: 0,
+                    losses: 0,
+                    avatar: { body: 'round', eyes: 'cute', primary: '#FFD700', secondary: '#4a148c' }
+                };
+                await setDoc(profileRef, myProfile);
+            }
+            
+            localStorage.setItem('flapashoota_profile', JSON.stringify(myProfile));
+            updateProfileUI();
+            document.getElementById('logoutBtn').style.display = 'block';
+            showScreen('menuScreen');
+        } catch (e) {
+            console.error("Google sign in issue:", e);
+            alert("Google login is unavailable inside sandboxed canvases. Please use the secure PIN login method below instead!");
+        }
+    }
+
+    async function handlePinLogin() {
+        let username = document.getElementById('authUsername').value.trim();
+        let pin = document.getElementById('authPin').value.trim();
+
+        if (!username || pin.length !== 4 || isNaN(pin)) {
+            alert("Please enter a valid Username and a 4-Digit numeric PIN.");
+            return;
+        }
+
+        username = sanitizeName(username);
+        let userKey = "fsprofile_" + username.toLowerCase();
+        let existing = localStorage.getItem(userKey);
+
+        if (existing) {
+            let parsed = JSON.parse(existing);
+            if (parsed.pin !== pin) {
+                alert("Incorrect PIN code for this username.");
+                return;
+            }
+            myProfile = parsed;
+        } else {
+            myProfile = {
+                username: username,
+                pin: pin,
+                wins: 0,
+                losses: 0,
+                avatar: {
+                    body: 'round',
+                    eyes: 'happy',
+                    primary: '#FFD700',
+                    secondary: '#4a148c'
+                }
+            };
+            localStorage.setItem(userKey, JSON.stringify(myProfile));
+        }
+
+        // Persist local profile snapshot
+        localStorage.setItem('flapashoota_profile', JSON.stringify(myProfile));
+        updateProfileUI();
+        document.getElementById('logoutBtn').style.display = 'block';
+        showScreen('menuScreen');
+    }
+
+    function logoutProfile() {
+        localStorage.removeItem('flapashoota_profile');
+        myProfile = {
+            username: "Guest",
+            pin: "",
+            wins: 0,
+            losses: 0,
+            avatar: {
+                body: 'round',
+                eyes: 'happy',
+                primary: '#FFD700',
+                secondary: '#4a148c'
+            }
+        };
+        updateProfileUI();
+        document.getElementById('logoutBtn').style.display = 'none';
+        showScreen('menuScreen');
+    }
+
+    // --- LEVEL EDITOR SYSTEM ---
+    let customMapData = { obs: [], pipes: [] };
+    let editorActiveTool = 'obs';
+    const gridCellSize = 40;
+
+    function openLevelEditor() {
+        cleanupNetwork();
+        state = 'editor';
+        showScreen('editorScreen');
+        customMapData = { obs: [], pipes: [] };
+    }
+
+    function selectEditorTool(tool) {
+        editorActiveTool = tool;
+        document.querySelectorAll('.editor-tool').forEach(b => b.style.borderColor = 'var(--gold-dark)');
+        document.getElementById(`tool_${tool}`).style.borderColor = 'var(--gold-primary)';
+    }
+
+    function saveCustomMap() {
+        MAPS['Custom Layout'] = {
+            obs: [...customMapData.obs],
+            pipes: [...customMapData.pipes]
+        };
+        alert("Layout successfully saved! You can now select 'Custom Layout' from the loadout menu pool.");
+    }
+
+    function testCustomMap() {
+        MAPS['Custom Layout'] = {
+            obs: [...customMapData.obs],
+            pipes: [...customMapData.pipes]
+        };
+        selectedMapName = 'Custom Layout';
+        enterArenaLocal();
+    }
+
+    function exitLevelEditor() {
+        showScreen('menuScreen');
+        state = 'menu';
+    }
+
+    // --- GEOMETRY DASH STYLE AVATAR SYSTEM ---
+    const neonColors = ['#FFD700', '#FF2A6D', '#05D9E8', '#01F9C6', '#A020F0', '#FF1493', '#39FF14', '#00FFFF', '#FF073A'];
+    
+    function renderAvatarPreview() {
+        const primaryGrid = document.getElementById('primaryColorGrid');
+        const secondaryGrid = document.getElementById('secondaryColorGrid');
+        
+        const renderSwatches = (container, isPrimary) => {
+            container.innerHTML = '';
+            neonColors.forEach(c => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch';
+                swatch.style.backgroundColor = c;
+                
+                const curColor = isPrimary ? myProfile.avatar.primary : myProfile.avatar.secondary;
+                if (curColor === c) swatch.classList.add('selected');
+                
+                swatch.onclick = () => {
+                    if (isPrimary) myProfile.avatar.primary = c;
+                    else myProfile.avatar.secondary = c;
+                    renderAvatarPreview();
+                    updateAvatarPreview();
+                };
+                container.appendChild(swatch);
+            });
+        };
+        renderSwatches(primaryGrid, true);
+        renderSwatches(secondaryGrid, false);
+    }
+
+    function setPrimaryColor(c) {
+        myProfile.avatar.primary = c;
+        renderAvatarPreview();
+        updateAvatarPreview();
+    }
+
+    function setSecondaryColor(c) {
+        myProfile.avatar.secondary = c;
+        renderAvatarPreview();
+        updateAvatarPreview();
+    }
+
+    function updateAvatarPreview() {
+        const previewCanvas = document.getElementById('previewCanvas');
+        const pCtx = previewCanvas.getContext('2d');
+        pCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        
+        // Render GD avatar in preview window
+        pCtx.save();
+        pCtx.translate(50, 50);
+        
+        // Read selected avatar states
+        const shape = document.getElementById('avBody').value;
+        const face = document.getElementById('avEyes').value;
+        const col1 = myProfile.avatar.primary;
+        const col2 = myProfile.avatar.secondary;
+        
+        // Draw avatar shape
+        pCtx.fillStyle = col1;
+        pCtx.strokeStyle = col2;
+        pCtx.lineWidth = 4;
+        
+        if (shape === 'round') {
+            pCtx.beginPath(); pCtx.arc(0, 0, 25, 0, Math.PI*2); pCtx.fill(); pCtx.stroke();
+        } else if (shape === 'square') {
+            pCtx.fillRect(-22, -22, 44, 44); pCtx.strokeRect(-22, -22, 44, 44);
+        } else if (shape === 'triangle') {
+            pCtx.beginPath(); pCtx.moveTo(-25, 20); pCtx.lineTo(25, 0); pCtx.lineTo(-25, -20); pCtx.closePath(); pCtx.fill(); pCtx.stroke();
+        } else if (shape === 'spike') {
+            pCtx.beginPath();
+            for (let i = 0; i < 8; i++) {
+                let a = (Math.PI / 4) * i;
+                pCtx.lineTo(Math.cos(a) * 28, Math.sin(a) * 28);
+                pCtx.lineTo(Math.cos(a + Math.PI / 8) * 16, Math.sin(a + Math.PI / 8) * 16);
+            }
+            pCtx.closePath(); pCtx.fill(); pCtx.stroke();
+        }
+
+        // Inside details stripe
+        pCtx.fillStyle = col2;
+        pCtx.fillRect(-7, -7, 14, 16);
+
+        // Face detail style
+        pCtx.fillStyle = '#fff';
+        if (face === 'happy') {
+            pCtx.beginPath(); pCtx.arc(8, -8, 8, 0, Math.PI * 2); pCtx.fill(); pCtx.strokeStyle = '#000'; pCtx.stroke();
+            pCtx.fillStyle = '#000'; pCtx.beginPath(); pCtx.arc(10, -8, 3, 0, Math.PI * 2); pCtx.fill();
+        } else if (face === 'shades') {
+            pCtx.fillStyle = '#111';
+            pCtx.fillRect(2, -12, 18, 8);
+            pCtx.fillStyle = '#FFD700';
+            pCtx.fillRect(4, -10, 6, 4);
+        } else if (face === 'angry') {
+            pCtx.fillStyle = '#ff003c'; pCtx.beginPath(); pCtx.arc(8, -8, 7, 0, Math.PI * 2); pCtx.fill();
+        } else if (face === 'cute') {
+            pCtx.beginPath(); pCtx.arc(8, -8, 8, 0, Math.PI*2); pCtx.fill();
+            pCtx.fillStyle = '#000'; pCtx.beginPath(); pCtx.arc(8, -8, 4, 0, Math.PI*2); pCtx.fill();
+        }
+        
+        pCtx.restore();
+    }
+
+    function saveAvatarConfig() {
+        myProfile.avatar.body = document.getElementById('avBody').value;
+        myProfile.avatar.eyes = document.getElementById('avEyes').value;
+        
+        // Commit profile parameters locally
+        localStorage.setItem('flapashoota_profile', JSON.stringify(myProfile));
+        let userKey = "fsprofile_" + myProfile.username.toLowerCase();
+        if (myProfile.pin) {
+            localStorage.setItem(userKey, JSON.stringify(myProfile));
+        }
+        alert("Avatar details applied successfully!");
+        showScreen('menuScreen');
+    }
+
+    // --- NAME FILTER SYSTEM ---
+    window.sanitizeName = function(name) {
+        if (!name) return "Player" + Math.floor(Math.random() * 1000);
+        let lower = name.toLowerCase();
+        const badWords = ['poop', 'crap', 'shit', 'fuck', 'bitch', 'ass', 'dick', 'damn', 'hell', 'slut', 'whore', 'cunt', 'fag', 'nigg', 'bastard', 'cock', 'pussy', 'twat', 'sex', 'porn', 'cum'];
+        for (let word of badWords) {
+            if (lower.includes(word)) {
+                return "Player" + Math.floor(Math.random() * 1000);
+            }
+        }
+        name = name.trim();
+        if (name.length === 0) return "Player" + Math.floor(Math.random() * 1000);
+        return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    };
+
+    // Console functions
+    let commandHistory = [];
+    let historyIndex = -1;
+
+    window.toggleConsole = function() {
+        const el = document.getElementById('consoleInputArea');
+        el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'flex' : 'none';
+    };
+
+    window.handleConsoleKey = function(e) {
+        const input = document.getElementById('consoleInput');
+        if (e.key === 'ArrowUp') {
+            if (commandHistory.length > 0) {
+                historyIndex = Math.max(0, historyIndex - 1);
+                input.value = commandHistory[historyIndex];
+            }
+        } else if (e.key === 'ArrowDown') {
+            if (historyIndex < commandHistory.length - 1) {
+                historyIndex++;
+                input.value = commandHistory[historyIndex];
+            } else {
+                historyIndex = commandHistory.length;
+                input.value = '';
+            }
+        } else if (e.key === 'Enter') {
+            runCommand();
+        }
+    };
+    
+    window.runCommand = function() {
+        const input = document.getElementById('consoleInput');
+        const val = input.value.trim();
+        if (!val) return;
+        commandHistory.push(val);
+        historyIndex = commandHistory.length;
+
+        if (val === '(/give @67 1000 score)') {
+            score += 1000;
+            updateHUD();
+            alert('Cheat activated! +1000 score added.');
+        } else {
+            alert('Unknown command.');
+        }
+        input.value = '';
+        window.toggleConsole(); 
+    };
+
+    // --- GEN GAME LOOPS & RENDERING ---
+    let state = 'menu';
+    let score = 0;
+    let targetFPS = 60;
+    let fpsInterval = 1000 / targetFPS;
+    let lastTime = 0;
+    let darkMode = false;
+    
+    const abilityPool = ['Dash', 'Heal', 'Shield', 'Burst', 'MegaShot'];
+
+    // --- PRO MAPS COLLECTION (100 Maps procedurally defined) ---
+    const MAPS = {
+        'Classic': { obs: [], pipes: [] },
+        'Teleport Tower': {
+            obs: [{x: 400, y: 300, w: 100, h: 200}, {x: 700, y: 300, w: 100, h: 200}, {x: 550, y: 550, w: 100, h: 50}],
+            pipes: [{x: 550, y: 750, w: 100, h: 50, destX: 600, destY: 50}]
+        },
+        'Obstacle Course': {
+            obs: [{x: 200, y: 200, w: 800, h: 50}, {x: 200, y: 600, w: 800, h: 50}, {x: 550, y: 350, w: 100, h: 100}],
+            pipes: [{x: 100, y: 750, w: 80, h: 50, destX: 140, destY: 100}, {x: 1020, y: 750, w: 80, h: 50, destX: 1060, destY: 100}]
+        },
+        'Floating Islands': {
+            obs: [{x: 150, y: 400, w: 200, h: 30}, {x: 850, y: 400, w: 200, h: 30}, {x: 500, y: 200, w: 200, h: 30}],
+            pipes: []
+        },
+        'The Pit': {
+            obs: [{x: 0, y: 400, w: 400, h: 400}, {x: 800, y: 400, w: 400, h: 400}],
+            pipes: [{x: 550, y: 750, w: 100, h: 50, destX: 600, destY: 50}]
+        },
+        'Zig Zag': {
+            obs: [{x: 0, y: 200, w: 600, h: 40}, {x: 600, y: 500, w: 600, h: 40}],
+            pipes: []
+        },
+        'Double Deck': {
+            obs: [{x: 200, y: 300, w: 800, h: 30}, {x: 200, y: 600, w: 800, h: 30}],
+            pipes: [{x: 50, y: 750, w: 80, h: 50, destX: 90, destY: 100}]
+        },
+        'Wall City': {
+            obs: [{x: 300, y: 100, w: 50, h: 300}, {x: 600, y: 400, w: 50, h: 400}, {x: 850, y: 100, w: 50, h: 300}],
+            pipes: []
+        }
+    };
+    
+    // Generate up to 100 maps including special hazard variants!
+    for (let i = 9; i <= 100; i++) {
+        let obsList = [];
+        let pipeList = [];
+        let lavaList = [];
+        let waterList = [];
+        let bounceList = [];
+
+        let variant = i % 5;
+        if (variant === 0) {
+            // Lava Pits Layout
+            obsList.push({x: 100, y: 400, w: 300, h: 40}, {x: 800, y: 400, w: 300, h: 40});
+            lavaList.push({x: 400, y: 760, w: 400, h: 40});
+            bounceList.push({x: 350, y: 740, w: 50, h: 20}, {x: 800, y: 740, w: 50, h: 20});
+        } else if (variant === 1) {
+            // Water Basins slowdown area
+            obsList.push({x: 250, y: 200, w: 700, h: 30}, {x: 250, y: 600, w: 700, h: 30});
+            waterList.push({x: 350, y: 230, w: 500, h: 370});
+        } else if (variant === 2) {
+            // Bounce Heaven
+            obsList.push({x: 100, y: 300, w: 200, h: 40}, {x: 900, y: 300, w: 200, h: 40});
+            bounceList.push({x: 350, y: 600, w: 60, h: 20}, {x: 550, y: 600, w: 60, h: 20}, {x: 750, y: 600, w: 60, h: 20});
+        } else if (variant === 3) {
+            // Grid-like Maze
+            obsList.push({x: 200, y: 150, w: 50, h: 500}, {x: 950, y: 150, w: 50, h: 500}, {x: 400, y: 400, w: 400, h: 50});
+        } else {
+            // Symmetrical teleports map
+            obsList.push({x: 500, y: 300, w: 200, h: 200});
+            pipeList.push({x: 150, y: 750, w: 100, h: 50, destX: 1050, destY: 100}, {x: 950, y: 750, w: 100, h: 50, destX: 150, destY: 100});
+        }
+
+        MAPS[`Silly Arena ${i}`] = { obs: obsList, pipes: pipeList, lavas: lavaList, waters: waterList, bounces: bounceList };
+    }
+    
+    let selectedMapName = 'Classic';
+    let myMapVote = 'Classic';
+    let oppMapVote = 'Classic';
+
+    let lobbyP1NameText = "Player 1";
+    let lobbyP2NameText = "Player 2";
+
+    let roundOver = false;
+    let roundOverTime = 0;
+    let winnerName = "";
+
+    window.selectMap = function(m) {
+        if (!isOnline) {
+            selectedMapName = m;
+            renderMapGrid();
+        } else {
+            myMapVote = m;
+            window.syncOnlineLoadout();
+            renderMapGrid();
+        }
+    };
+
+    function renderMapGrid() {
+        const grid = document.getElementById('mapGrid');
+        grid.innerHTML = '';
+        currentMapSelectionKeys.forEach(m => {
+            let isMyVote = false;
+            let isOppVote = false;
+            let isSelectedLocally = false;
+
+            if (isOnline) {
+                isMyVote = (myMapVote === m);
+                isOppVote = (oppMapVote === m);
+            } else {
+                isSelectedLocally = (selectedMapName === m);
+            }
+
+            let border = '2px solid #555';
+            let bg = 'rgba(0,0,0,0.5)';
+            let voteText = '';
+
+            if (isOnline) {
+                if (isMyVote && isOppVote) {
+                    border = '2px solid #2ecc71';
+                    bg = 'rgba(46, 204, 113, 0.2)';
+                    voteText = '<div style="color:#2ecc71; font-size:10px; font-weight:bold; margin-top:2px;">BOTH VOTED</div>';
+                } else if (isMyVote) {
+                    border = '2px solid var(--gold-primary)';
+                    bg = 'rgba(255, 215, 0, 0.2)';
+                    voteText = '<div style="color:var(--gold-primary); font-size:10px; font-weight:bold; margin-top:2px;">YOUR VOTE</div>';
+                } else if (isOppVote) {
+                    border = '2px solid #3498db';
+                    bg = 'rgba(52, 152, 219, 0.2)';
+                    voteText = '<div style="color:#3498db; font-size:10px; font-weight:bold; margin-top:2px;">OPP VOTE</div>';
+                }
+            } else {
+                if (isSelectedLocally) {
+                    border = '2px solid var(--gold-primary)';
+                    bg = 'rgba(255, 215, 0, 0.2)';
+                    voteText = '<div style="color:var(--gold-primary); font-size:10px; font-weight:bold; margin-top:2px;">SELECTED</div>';
+                }
+            }
+            
+            // Build visual mini-preview via CSS
+            let obsHTML = '';
+            let mapDef = MAPS[m] || MAPS['Classic'];
+            if(mapDef.obs) {
+                mapDef.obs.forEach(o => {
+                    obsHTML += `<div style="position: absolute; left: ${(o.x/1200)*100}%; top: ${(o.y/800)*100}%; width: ${(o.w/1200)*100}%; height: ${(o.h/800)*100}%; background: #21003b; border: 1px solid var(--gold-primary);"></div>`;
+                });
+            }
+            if(mapDef.pipes) {
+                mapDef.pipes.forEach(p => {
+                    obsHTML += `<div style="position: absolute; left: ${(p.x/1200)*100}%; top: ${(p.y/800)*100}%; width: ${(p.w/1200)*100}%; height: ${(p.h/800)*100}%; background: #2ecc71;"></div>`;
+                });
+            }
+            if(mapDef.lavas) {
+                mapDef.lavas.forEach(l => {
+                    obsHTML += `<div style="position: absolute; left: ${(l.x/1200)*100}%; top: ${(l.y/800)*100}%; width: ${(l.w/1200)*100}%; height: ${(l.h/800)*100}%; background: #ff3300;"></div>`;
+                });
+            }
+            if(mapDef.waters) {
+                mapDef.waters.forEach(w => {
+                    obsHTML += `<div style="position: absolute; left: ${(w.x/1200)*100}%; top: ${(w.y/800)*100}%; width: ${(w.w/1200)*100}%; height: ${(w.h/800)*100}%; background: rgba(52,152,219,0.5);"></div>`;
+                });
+            }
+
+            grid.innerHTML += `
+            <div class="map-card" onclick="selectMap('${m}')" style="border: ${border}; background: ${bg};">
+                <div style="font-size: 11px; font-weight: bold; color: var(--gold-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${m}</div>
+                <div style="position: relative; width: 100%; height: 35px; background: rgba(0,0,0,0.8); border-radius: 4px; margin-top: 5px; overflow: hidden;">
+                    ${obsHTML}
+                </div>
+                ${voteText}
+            </div>`;
+        });
+    }
+
+    // Loadout variables & functions
+    let loadoutData = {
+        p1: { choices: [], rerolls: 2, ready: false, weapon: '' },
+        p2: { choices: [], rerolls: 2, ready: false, weapon: '' }
+    };
+
+    window.selectWeapon = function(player, wep) { 
+        loadoutData[player].weapon = wep; 
+        if(isOnline) window.syncOnlineLoadout(); 
+    };
+
+    window.doReroll = function(player) {
+        if(loadoutData[player].rerolls > 0 && !loadoutData[player].ready) {
+            loadoutData[player].rerolls--;
+            loadoutData[player].choices = getRandomWeapons(3);
+            loadoutData[player].weapon = loadoutData[player].choices[0]; 
+            updateLoadoutUI();
+            if(isOnline) window.syncOnlineLoadout();
+        }
+    };
+
+    window.toggleReady = function(player) {
+        loadoutData[player].ready = !loadoutData[player].ready;
+        updateLoadoutUI();
+        if(isOnline) {
+            window.syncOnlineLoadout();
+        } else {
+            // Check if both local players are ready
+            if (loadoutData.p1.ready && loadoutData.p2.ready) {
+                enterArenaLocal();
+            }
+        }
+    };
+
+    function getRandomWeapons(count = 3) {
+        let shuffled = [...allWeaponTypes].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+    }
+
+    function generateLoadoutHTML(player) {
+        let data = loadoutData[player];
+        let pName = player === 'p1' ? 'Player 1' : 'Player 2';
+        if (isOnline) pName = "Your Weapon";
+        let disabled = data.ready ? 'disabled' : '';
+        
+        let html = `<h3 style="margin-bottom: 15px; border-bottom: 2px solid var(--gold-primary); padding-bottom: 5px; color: var(--gold-primary);">${pName}</h3>`;
+        html += `<div class="weapon-options">`;
+        data.choices.forEach((w, i) => {
+            let checked = data.weapon === w ? 'checked' : '';
+            let ab = weaponStats[w].ability;
+            let abColor = 'var(--text-color)';
+            
+            html += `<label class="weapon-option">
+                <input type="radio" name="${player}Wep" value="${w}" onchange="selectWeapon('${player}', '${w}')" ${checked} ${disabled}> 
+                <div>
+                    <strong style="font-size: 16px; color: var(--gold-primary);">${weaponStats[w].emoji} ${w}</strong><br>
+                    <small style="color: ${abColor}; font-weight: bold; text-transform: uppercase;">ABILITY: ${ab}</small>
+                </div>
+            </label>`;
+        });
+        html += `</div>`;
+        html += `<button onclick="doReroll('${player}')" ${data.rerolls <= 0 || data.ready ? 'disabled' : ''} style="margin-top: 10px; font-size: 14px;">Rerolls Left: ${data.rerolls}</button>`;
+        
+        let readyBtnText = data.ready ? 'READY!' : 'Click when ready';
+        let readyBtnStyle = data.ready ? 'background-color: var(--gold-primary); color: #000;' : 'background-color: #2a004d;';
+        html += `<button onclick="toggleReady('${player}')" style="${readyBtnStyle}">${readyBtnText}</button>`;
+        return html;
+    }
+
+    function updateLoadoutUI() {
+        if (!isOnline) {
+            document.getElementById('localP1Loadout').innerHTML = generateLoadoutHTML('p1');
+            document.getElementById('localP2Loadout').innerHTML = generateLoadoutHTML('p2');
+        } else {
+            let myRole = isHost ? 'p1' : 'p2';
+            document.getElementById('myOnlineLoadout').innerHTML = generateLoadoutHTML(myRole);
+        }
+    }
+
+    // KEYBINDS
+    let keysPressed = {};
+    let kb = {
+        p1: { left: 'KeyA', right: 'KeyD', jump: 'KeyW', down: 'KeyS', special: 'KeyF' },
+        p2: { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', down: 'ArrowDown', special: 'Slash' }
+    };
+    
+    let isBinding = null;
+    window.startBind = function(player, action) {
+        isBinding = { player, action };
+        document.getElementById(`btn_${player}_${action}`).innerText = "...";
+    };
+
+    // Physics parameters
+    const GRAVITY = 0.4;
+    const JUMP_FORCE = -7.5;
+
+    // UI Management
+    function showScreen(screenId) {
+        document.querySelectorAll('.ui-layer').forEach(el => el.classList.remove('active'));
+        if (screenId) document.getElementById(screenId).classList.add('active');
+        if (screenId === 'avatarScreen') renderAvatarPreview();
+    }
+
+    function updateHUD() {
+        if (state === 'arena') {
+            document.getElementById('hud').innerHTML = 
+                `P1 HP: ${Math.max(0, p1.hp)} [Wep: ${p1.weapon}]<br>` + 
+                `P2 HP: ${Math.max(0, p2.hp)} [Wep: ${p2.weapon}]`;
+        } else {
+            document.getElementById('hud').innerHTML = `Score: ${score}`;
+        }
+    }
+
+    function handleRespawn() {
+        if (state === 'arena' || lastStateContext === 'arena') {
+            if (isOnline) {
+                // Return to loadout phase for a rematch!
+                updateDoc(getLobbyRef(lobbyCode), { state: 'loadout' });
+            } else {
+                startLocalLoadout();
+            }
+        } else {
+            startGame();
+        }
+    }
+    
+    let lastStateContext = 'flappy';
+
+    function backToMenu() {
+        if (isOnline) cleanupNetwork();
+        showScreen('menuScreen');
+    }
+
+    function toggleDarkMode() {
+        darkMode = !darkMode;
+        document.body.classList.toggle('dark-mode', darkMode);
+    }
+
+    // --- DETAILED GENERATIVE BIRD MODEL (GEOMETRY DASH STYLE) ---
+    function drawDetailedBird(x, y, size, color, vy, direction = 1, isP2 = false) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(direction, 1);
+        
+        let angle = Math.min(Math.max(vy * 0.04, -0.3), 0.7);
+        ctx.rotate(angle);
+
+        let avatarConfig = myProfile.avatar;
+        if(isP2 && isOnline) {
+            avatarConfig = { body: 'square', eyes: 'cute', primary: '#e74c3c', secondary: '#ffffff' };
+        } else if (isP2 && !isOnline) {
+            avatarConfig = { body: 'round', eyes: 'cute', primary: '#e74c3c', secondary: '#ffffff' };
+        }
+
+        // Tail feathers
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.8, 0);
+        ctx.lineTo(-size * 1.5, -size * 0.5);
+        ctx.lineTo(-size * 1.3, 0);
+        ctx.lineTo(-size * 1.6, size * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Main customized body shape (Geometry Dash Style)
+        let bodyShape = avatarConfig.body;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = avatarConfig.secondary;
+        ctx.fillStyle = avatarConfig.primary;
+
+        if (bodyShape === 'round') {
+            ctx.beginPath(); ctx.arc(0, 0, size, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        } else if (bodyShape === 'square') {
+            ctx.fillRect(-size, -size, size*2, size*2);
+            ctx.strokeRect(-size, -size, size*2, size*2);
+        } else if (bodyShape === 'triangle') {
+            ctx.beginPath(); ctx.moveTo(0, -size); ctx.lineTo(size, size); ctx.lineTo(-size, size); ctx.closePath();
+            ctx.fill(); ctx.stroke();
+        } else if (bodyShape === 'spike') {
+            ctx.beginPath(); ctx.arc(0, 0, size * 0.8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            for(let a=0; a<Math.PI*2; a+=Math.PI/4) {
+                ctx.save(); ctx.rotate(a);
+                ctx.beginPath(); ctx.moveTo(size * 0.7, -5); ctx.lineTo(size * 1.2, 0); ctx.lineTo(size * 0.7, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        // Secondary inside color stripe
+        ctx.fillStyle = avatarConfig.secondary;
+        ctx.fillRect(-size*0.4, -size*0.4, size*0.8, size*0.8);
+
+        // Eyes / Glasses (Geometry Dash Face Customizer)
+        let eyeStyle = avatarConfig.eyes;
+        ctx.fillStyle = '#fff';
+        if (eyeStyle === 'happy') {
+            ctx.beginPath(); ctx.arc(size * 0.4, -size * 0.3, size * 0.35, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#000'; ctx.stroke();
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(size * 0.5 + (Math.cos(angle)*2), -size * 0.3, size * 0.15, 0, Math.PI * 2); ctx.fill();
+        } else if (eyeStyle === 'shades') {
+            ctx.fillStyle = '#111'; ctx.fillRect(-2, -size*0.6, size, size*0.4); ctx.strokeRect(-2, -size*0.6, size, size*0.4);
+        } else if (eyeStyle === 'angry') {
+            ctx.fillStyle = '#ff003c'; ctx.beginPath(); ctx.arc(size * 0.4, -size * 0.3, size * 0.35, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(size * 0.5 + (Math.cos(angle)*2), -size * 0.3, size * 0.15, 0, Math.PI * 2); ctx.fill();
+        } else if (eyeStyle === 'cute') {
+            ctx.beginPath(); ctx.arc(size * 0.4, -size * 0.3, size * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(size * 0.4, -size * 0.3, size * 0.25, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(size * 0.3, -size * 0.4, size * 0.1, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Beak
+        ctx.fillStyle = '#FFD700'; 
+        ctx.beginPath();
+        ctx.moveTo(size * 0.7, -size * 0.1);
+        ctx.lineTo(size * 1.5, size * 0.1);
+        ctx.lineTo(size * 0.7, size * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    // --- FLAPPY PIPES LOGIC ---
+    let bird = { x: 150, y: 300, vy: 0, size: 20 };
+    let pipes = [];
+    let pipeWidth = 60;
+    let pipeGap = 150;
+    let frameCount = 0;
+
+    function startGame() {
+        cleanupNetwork();
+        state = 'flappy';
+        lastStateContext = 'flappy';
+        bird.y = 300;
+        bird.vy = 0;
+        pipes = [];
+        score = 0;
+        frameCount = 0;
+        showScreen(null);
+        updateHUD();
+    }
+
+    function updateFlappy() {
+        bird.vy += GRAVITY;
+        bird.y += bird.vy;
+
+        if (frameCount % 90 === 0) {
+            let topHeight = Math.random() * (canvas.height - pipeGap - 100) + 50;
+            pipes.push({ x: canvas.width, top: topHeight, passed: false });
+        }
+
+        for (let i = pipes.length - 1; i >= 0; i--) {
+            let p = pipes[i];
+            p.x -= 4;
+
+            if (bird.x + bird.size > p.x && bird.x - bird.size < p.x + pipeWidth) {
+                if (bird.y - bird.size < p.top || bird.y + bird.size > p.top + pipeGap) {
+                    state = 'menu';
+                    showScreen('deathScreen');
+                }
+            }
+
+            if (p.x + pipeWidth < bird.x && !p.passed) {
+                score++;
+                p.passed = true;
+                updateHUD();
+            }
+
+            if (p.x + pipeWidth < 0) pipes.splice(i, 1);
+        }
+
+        if (bird.y > canvas.height || bird.y < 0) {
+            state = 'menu';
+            showScreen('deathScreen');
+        }
+    }
+
+    function drawFlappy() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawDetailedBird(bird.x, bird.y, bird.size, '#FFD700', bird.vy, 1);
+
+        ctx.fillStyle = '#21003b'; // Obstacle color
+        ctx.strokeStyle = '#FFD700'; 
+        ctx.lineWidth = 3;
+        pipes.forEach(p => {
+            ctx.fillRect(p.x, 0, pipeWidth, p.top);
+            ctx.fillRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - p.top - pipeGap);
+            ctx.strokeRect(p.x, 0, pipeWidth, p.top);
+            ctx.strokeRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - p.top - pipeGap);
+        });
+    }
+
+    // --- LOADOUT PHASE ---
+    function startLocalLoadout() {
+        cleanupNetwork();
+        state = 'loadout';
+        lastStateContext = 'arena';
+        showScreen('loadoutScreen');
+        document.getElementById('localLoadoutDiv').style.display = 'flex';
+        document.getElementById('onlineLoadoutDiv').style.display = 'none';
+        
+        // Generate random choices for both players
+        loadoutData.p1 = { choices: getRandomWeapons(3), rerolls: 2, ready: false, weapon: '' };
+        loadoutData.p2 = { choices: getRandomWeapons(3), rerolls: 2, ready: false, weapon: '' };
+        loadoutData.p1.weapon = loadoutData.p1.choices[0];
+        loadoutData.p2.weapon = loadoutData.p2.choices[0];
+        
+        // Extract 8 random maps from the library of 100
+        let allMapNames = Object.keys(MAPS);
+        currentMapSelectionKeys = [...allMapNames].sort(() => 0.5 - Math.random()).slice(0, 8);
+        selectedMapName = currentMapSelectionKeys[0];
+        
+        renderMapGrid();
+        updateLoadoutUI();
+    }
+
+    function enterArenaLocal() {
+        p1 = { 
+            x: 200, y: 250, vx: 0, vy: 0, size: 22, color: '#FFD700', hp: 100,
+            weapon: loadoutData.p1.weapon, 
+            fireTs: 0, aimAngle: 0, nextAbilityTime: 0, shieldEndTime: 0, megaShot: false, phasing: false 
+        };
+        p2 = { 
+            x: 1000, y: 250, vx: 0, vy: 0, size: 22, color: '#e74c3c', hp: 100, 
+            weapon: loadoutData.p2.weapon, 
+            fireTs: 0, aimAngle: Math.PI, nextAbilityTime: 0, shieldEndTime: 0, megaShot: false, phasing: false 
+        };
+        projectiles = [];
+        state = 'arena';
+        showScreen(null);
+        updateHUD();
+
+        // Reset round end tracking
+        roundOver = false;
+        roundOverTime = 0;
+        winnerName = "";
+        document.getElementById('deathWinnerDisplay').innerText = "";
+    }
+
+    window.syncOnlineLoadout = function() {
+        if (!isOnline || !lobbyCode) return;
+        let myRole = isHost ? 'p1' : 'p2';
+        
+        let payload = {
+            [`${myRole}.weapon`]: loadoutData[myRole].weapon,
+            [`${myRole}.ready`]: loadoutData[myRole].ready,
+            [`${myRole}.mapVote`]: myMapVote
+        };
+
+        updateDoc(getLobbyRef(lobbyCode), payload).catch(e=>console.error(e));
+    };
+
+
+    // --- PVP MID-AIR ARENA LOGIC ---
+    let p1, p2;
+    let projectiles = [];
+    let mouseX = 600, mouseY = 400;
+    
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        mouseX = (e.clientX - rect.left) * scaleX;
+        mouseY = (e.clientY - rect.top) * scaleY;
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+        if (state === 'editor') {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let cx = (e.clientX - rect.left) * scaleX;
+            let cy = (e.clientY - rect.top) * scaleY;
+            handleEditorCanvasClick(cx, cy);
+        }
+    });
+
+    function useAbility(owner) {
+        let p = (owner === 'p1') ? p1 : p2;
+        if (Date.now() < p.nextAbilityTime) return; // Cooldown active
+
+        let ability = weaponStats[p.weapon].ability;
+
+        if (ability === 'Dash') {
+            p.vx = Math.cos(p.aimAngle) * 20;
+            p.vy = Math.sin(p.aimAngle) * 20;
+            p.nextAbilityTime = Date.now() + 3000;
+        } else if (ability === 'Heal') {
+            p.hp = Math.min(100, p.hp + 30);
+            p.nextAbilityTime = Date.now() + 8000;
+        } else if (ability === 'Shield') {
+            p.shieldEndTime = Date.now() + 2500;
+            p.nextAbilityTime = Date.now() + 10000;
+        } else if (ability === 'Burst') {
+            for (let i = -2; i <= 2; i++) {
+                fireWeapon(owner, false, i * 0.15); 
+            }
+            p.nextAbilityTime = Date.now() + 5000;
+        } else if (ability === 'MegaShot') {
+            p.megaShot = true;
+            p.nextAbilityTime = Date.now() + 6000;
+        }
+
+        if (isOnline) {
+            if (owner === 'p1' && isHost) p1.fireTs = Date.now() + 1;
+            if (owner === 'p2' && !isHost) p2.fireTs = Date.now() + 1;
+        }
+    }
+
+    // Advanced Collision Resolver
+    function resolveCollision(p, obj) {
+        if (p.phasing) return; // Ignore block if phasing down
+
+        let birdX = p.x - p.size;
+        let birdY = p.y - p.size;
+        let birdW = p.size * 2;
+        let birdH = p.size * 2;
+
+        if (birdX < obj.x + obj.w && birdX + birdW > obj.x &&
+            birdY < obj.y + obj.h && birdY + birdH > obj.y) {
+            
+            let overlapLeft = (obj.x + obj.w) - birdX;
+            let overlapRight = (birdX + birdW) - obj.x;
+            let overlapTop = (obj.y + obj.h) - birdY;
+            let overlapBottom = (birdY + birdH) - obj.y;
+
+            let minOverlap = Math.min(overlapLeft, overlapRight, overlapTop, overlapBottom);
+            let bounciness = -0.5;
+
+            if (minOverlap === overlapLeft) { p.x += overlapLeft; p.vx *= bounciness; }
+            else if (minOverlap === overlapRight) { p.x -= overlapRight; p.vx *= bounciness; }
+            else if (minOverlap === overlapTop) { p.y += overlapTop; p.vy *= bounciness; } // Hit head
+            else if (minOverlap === overlapBottom) { p.y -= overlapBottom; p.vy = 0; } // Stand on platform
+        }
+    }
+
+    // Check intersection with hazard zones
+    function checkHazardIntersection(p, hazard) {
+        return (p.x + p.size > hazard.x && p.x - p.size < hazard.x + hazard.w &&
+                p.y + p.size > hazard.y && p.y - p.size < hazard.y + hazard.h);
+    }
+
+    function updateArena() {
+        // Detect round winner immediately when one dies, only do it once
+        if (!roundOver && (p1.hp <= 0 || p2.hp <= 0)) {
+            roundOver = true;
+            roundOverTime = Date.now();
+            if (p1.hp <= 0) {
+                winnerName = isOnline ? lobbyP2NameText : "Player 2";
+                if (myProfile.username !== "Guest") {
+                    if (isHost) myProfile.losses++; else myProfile.wins++;
+                    localStorage.setItem('flapashoota_profile', JSON.stringify(myProfile));
+                    updateProfileUI();
+                }
+            } else {
+                winnerName = isOnline ? lobbyP1NameText : "Player 1";
+                if (myProfile.username !== "Guest") {
+                    if (isHost) myProfile.wins++; else myProfile.losses++;
+                    localStorage.setItem('flapashoota_profile', JSON.stringify(myProfile));
+                    updateProfileUI();
+                }
+            }
+        }
+
+        let mapData = MAPS[selectedMapName] || MAPS['Classic'];
+
+        if (!isOnline) {
+            if (roundOver) {
+                p1.vx *= 0.95; p2.vx *= 0.95;
+                p1.vy += GRAVITY; p1.y += p1.vy; p1.x += p1.vx;
+                p2.vy += GRAVITY; p2.y += p2.vy; p2.x += p2.vx;
+
+                if (Date.now() - roundOverTime >= 3000) {
+                    state = 'menu';
+                    document.getElementById('deathWinnerDisplay').innerText = `${winnerName} Won!`;
+                    showScreen('deathScreen');
+                }
+            } else {
+                // Water environment slow logic
+                let p1InWater = false;
+                if(mapData && mapData.waters) {
+                    mapData.waters.forEach(w => { if(checkHazardIntersection(p1, w)) p1InWater = true; });
+                }
+                let accel = p1InWater ? 0.4 : 1.5;
+                let maxSpeed = p1InWater ? 2.5 : 6;
+                let gravityVal = p1InWater ? 0.1 : GRAVITY;
+
+                if (keysPressed[kb.p1.left]) p1.vx -= accel;
+                else if (keysPressed[kb.p1.right]) p1.vx += accel;
+                else p1.vx *= 0.8;
+                if (p1.vx > maxSpeed) p1.vx = maxSpeed; if (p1.vx < -maxSpeed) p1.vx = -maxSpeed;
+
+                p1.phasing = keysPressed[kb.p1.down];
+                if (p1.phasing) p1.vy += p1InWater ? 1 : 3;
+                p1.vy += gravityVal; p1.y += p1.vy; p1.x += p1.vx;
+                p1.aimAngle = Math.atan2(mouseY - p1.y, mouseX - p1.x);
+
+                let p2InWater = false;
+                if(mapData && mapData.waters) {
+                    mapData.waters.forEach(w => { if(checkHazardIntersection(p2, w)) p2InWater = true; });
+                }
+                let accel2 = p2InWater ? 0.4 : 1.5;
+                let maxSpeed2 = p2InWater ? 2.5 : 6;
+                let gravityVal2 = p2InWater ? 0.1 : GRAVITY;
+
+                if (keysPressed[kb.p2.left]) p2.vx -= accel2;
+                else if (keysPressed[kb.p2.right]) p2.vx += accel2;
+                else p2.vx *= 0.8;
+                if (p2.vx > maxSpeed2) p2.vx = maxSpeed2; if (p2.vx < -maxSpeed2) p2.vx = -maxSpeed2;
+
+                p2.phasing = keysPressed[kb.p2.down];
+                if (p2.phasing) p2.vy += p2InWater ? 1 : 3;
+                p2.vy += gravityVal2; p2.y += p2.vy; p2.x += p2.vx;
+                if (p2.vx < -0.5) p2.aimAngle = Math.PI; 
+                else if (p2.vx > 0.5) p2.aimAngle = 0; 
+            }
+        } else {
+            let me = isHost ? p1 : p2;
+            let other = isHost ? p2 : p1;
+
+            if (roundOver) {
+                me.vx *= 0.95;
+                me.vy += GRAVITY; me.y += me.vy; me.x += me.vx;
+
+                other.x += other.vx;
+                other.y += other.vy;
+
+                if (Date.now() - roundOverTime >= 3000) {
+                    state = 'menu';
+                    document.getElementById('deathWinnerDisplay').innerText = `${winnerName} Won!`;
+                    showScreen('deathScreen');
+                }
+            } else {
+                let meInWater = false;
+                if(mapData && mapData.waters) {
+                    mapData.waters.forEach(w => { if(checkHazardIntersection(me, w)) meInWater = true; });
+                }
+                let accel = meInWater ? 0.4 : 1.5;
+                let maxSpeed = meInWater ? 2.5 : 6;
+                let gravityVal = meInWater ? 0.1 : GRAVITY;
+
+                if (keysPressed[kb.p1.left]) me.vx -= accel;
+                else if (keysPressed[kb.p1.right]) me.vx += accel;
+                else me.vx *= 0.8;
+                
+                if (me.vx > maxSpeed) me.vx = maxSpeed; if (me.vx < -maxSpeed) me.vx = -maxSpeed;
+
+                me.phasing = keysPressed[kb.p1.down];
+                if (me.phasing) me.vy += meInWater ? 1 : 3;
+                me.vy += gravityVal; me.y += me.vy; me.x += me.vx;
+                me.aimAngle = Math.atan2(mouseY - me.y, mouseX - me.x);
+
+                // Smooth Interpolation (Lerp) to prevent desyncs and rubber banding!
+                if (other.targetX !== undefined && other.targetY !== undefined) {
+                    other.x += (other.targetX - other.x) * 0.35;
+                    other.y += (other.targetY - other.y) * 0.35;
+                } else {
+                    other.x += other.vx;
+                    other.y += other.vy;
+                }
+            }
+        }
+
+        // Apply Obstacle, Bounce pads and hazard collisions
+        [p1, p2].forEach(p => {
+            if (p.x < p.size) p.x = p.size;
+            if (p.x > canvas.width - p.size) p.x = canvas.width - p.size;
+            if (p.y < p.size) { p.y = p.size; p.vy = 0; }
+            if (p.y > canvas.height - p.size) { p.y = canvas.height - p.size; p.vy = 0; }
+
+            // Platform intersections
+            if(mapData && mapData.obs) {
+                mapData.obs.forEach(obs => resolveCollision(p, obs));
+            }
+
+            // Lava hazardous triggers
+            if(mapData && mapData.lavas) {
+                mapData.lavas.forEach(l => {
+                    if (checkHazardIntersection(p, l)) {
+                        p.hp -= (5 / targetFPS); // 5 damage per second on lava blocks
+                    }
+                });
+            }
+
+            // Springs Bounce Pad
+            if(mapData && mapData.bounces) {
+                mapData.bounces.forEach(bounce => {
+                    if (p.x > bounce.x && p.x < bounce.x + bounce.w &&
+                        p.y + p.size > bounce.y && p.y - p.size < bounce.y + bounce.h) {
+                        p.vy = -13; // Spring bounce launch
+                    }
+                });
+            }
+            
+            // Warp Teleport Pipes
+            if(mapData && mapData.pipes) {
+                mapData.pipes.forEach(pipe => {
+                    if (p.x > pipe.x && p.x < pipe.x + pipe.w && p.y > pipe.y - p.size) {
+                        p.x = pipe.destX;
+                        p.y = pipe.destY;
+                        p.vy = 0;
+                    }
+                });
+            }
+        });
+
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+            let proj = projectiles[i];
+            proj.x += proj.vx;
+            proj.y += proj.vy;
+            proj.life--;
+
+            let hitObstacle = false;
+            if(mapData && mapData.obs) {
+                mapData.obs.forEach(obs => {
+                    if (proj.x > obs.x && proj.x < obs.x + obs.w && proj.y > obs.y && proj.y < obs.y + obs.h) {
+                        hitObstacle = true;
+                    }
+                });
+            }
+            if (hitObstacle) {
+                projectiles.splice(i, 1);
+                continue;
+            }
+
+            let target = (proj.owner === 'p1') ? p2 : p1;
+            let dx = proj.x - target.x;
+            let dy = proj.y - target.y;
+            let distance = Math.sqrt(dx*dx + dy*dy);
+
+            if (distance < proj.size + target.size) {
+                if (Date.now() > target.shieldEndTime) {
+                    target.hp -= proj.dmg;
+                }
+                projectiles.splice(i, 1);
+                updateHUD();
+                continue;
+            }
+            if (proj.life <= 0) projectiles.splice(i, 1);
+        }
+    }
+
+    function drawArena() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        let mapData = MAPS[selectedMapName] || MAPS['Classic'];
+
+        // Draw Water slow zones
+        if(mapData && mapData.waters) {
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.4)';
+            mapData.waters.forEach(w => {
+                ctx.fillRect(w.x, w.y, w.w, w.h);
+            });
+        }
+
+        // Draw Lava blocks
+        if(mapData && mapData.lavas) {
+            ctx.fillStyle = '#ff3300';
+            ctx.strokeStyle = '#e67e22';
+            ctx.lineWidth = 2;
+            mapData.lavas.forEach(l => {
+                ctx.fillRect(l.x, l.y, l.w, l.h);
+                ctx.strokeRect(l.x, l.y, l.w, l.h);
+            });
+        }
+
+        // Draw Bounce Pad springs
+        if(mapData && mapData.bounces) {
+            ctx.fillStyle = '#FF8C00';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            mapData.bounces.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.w, b.h);
+                ctx.strokeRect(b.x, b.y, b.w, b.h);
+            });
+        }
+        
+        // Draw Solid Obstacles
+        if(mapData && mapData.obs) {
+            ctx.fillStyle = '#21003b'; 
+            ctx.strokeStyle = '#FFD700'; 
+            ctx.lineWidth = 3;
+            mapData.obs.forEach(obs => {
+                ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+                ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+            });
+        }
+
+        // Draw Teleport Pipes
+        if(mapData && mapData.pipes) {
+            mapData.pipes.forEach(pipe => {
+                ctx.fillStyle = '#2ecc71';
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 3;
+                
+                ctx.fillRect(pipe.x, pipe.y, pipe.w, pipe.h);
+                ctx.strokeRect(pipe.x, pipe.y, pipe.w, pipe.h);
+                
+                ctx.fillRect(pipe.x - 5, pipe.y, pipe.w + 10, 20);
+                ctx.strokeRect(pipe.x - 5, pipe.y, pipe.w + 10, 20);
+            });
+        }
+
+        let p1Dir = Math.cos(p1.aimAngle) < 0 ? -1 : 1;
+        let p2Dir = Math.cos(p2.aimAngle) < 0 ? -1 : 1;
+
+        // Pass safe hardcoded colors to draw avatar configurations
+        drawDetailedBird(p1.x, p1.y, p1.size, '#FFD700', p1.vy, p1Dir);
+        drawDetailedBird(p2.x, p2.y, p2.size, '#e74c3c', p2.vy, p2Dir);
+
+        [p1, p2].forEach(p => {
+            if (Date.now() < p.shieldEndTime) {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size + 10, 0, Math.PI*2);
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            } else if (p.megaShot) {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size + 5, 0, Math.PI*2);
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            let ab = weaponStats[p.weapon].ability;
+            let maxCd = (ab === 'Heal') ? 8000 : (ab === 'Shield') ? 10000 : (ab === 'MegaShot') ? 6000 : (ab === 'Burst') ? 5000 : 3000;
+            let cdRatio = Math.max(0, p.nextAbilityTime - Date.now()) / maxCd;
+            if (cdRatio > 0) {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(p.x - 20, p.y + p.size + 10, 40, 5);
+                ctx.fillStyle = '#FFD700'; 
+                ctx.fillRect(p.x - 20, p.y + p.size + 10, 40 * (1 - cdRatio), 5);
+            } else {
+                ctx.fillStyle = '#FFD700'; 
+                ctx.font = 'bold 10px Montserrat, sans-serif';
+                ctx.fillText("READY", p.x - 18, p.y + p.size + 15);
+            }
+        });
+
+        projectiles.forEach(p => {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(Math.atan2(p.vy, p.vx)); 
+            ctx.font = `${p.size * 2}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(p.emoji, 0, 0);
+            ctx.restore();
+        });
+
+        ctx.fillStyle = '#ffffff'; 
+        ctx.font = 'bold 14px Montserrat, sans-serif';
+        
+        if (isOnline) {
+            let role = isHost ? "P1 (Host)" : "P2 (Client)";
+            let controls = `A/D: Move | W/Space: Flap | ${kb.p1.down.replace('Key','')}: Phase | L-Click: Shoot | ${kb.p1.special.replace('Key','')} : Ability`;
+            ctx.fillText(`Online Mode - You are ${role} - Controls: ${controls}`, 10, canvas.height - 20);
+        } else {
+            ctx.fillText(`P1: A/D Move | W/Space Flap | ${kb.p1.down.replace('Key','')} Phase | L-Click Shoot | ${kb.p1.special.replace('Key','')} Ability`, 10, canvas.height - 40);
+            ctx.fillText(`P2: Arrows Move | Up Arrow Flap | ${kb.p2.down.replace('Arrow','')} Phase | Enter Shoot | ${kb.p2.special.replace('Key','')} Ability`, 10, canvas.height - 20);
+        }
+
+        // Draw big announcement banner during the 3-second wait
+        if (roundOver) {
+            ctx.save();
+            ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#FFD700";
+            ctx.font = "bold 48px Montserrat, sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.strokeStyle = "#120024";
+            ctx.lineWidth = 8;
+            ctx.strokeText(`${winnerName} Won!`, canvas.width / 2, canvas.height / 2);
+            ctx.fillText(`${winnerName} Won!`, canvas.width / 2, canvas.height / 2);
+            ctx.restore();
+        }
+    }
+
+    // --- LEVEL EDITOR PREVIEW RENDER ---
+    function drawEditorGrid() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        
+        // Grid Lines
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.1)';
+        ctx.lineWidth = 1;
+        for (let x=0; x<canvas.width; x+=gridCellSize) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+        }
+        for (let y=0; y<canvas.height; y+=gridCellSize) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+        }
+
+        // Platforms
+        ctx.fillStyle = '#21003b'; ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 2;
+        customMapData.obs.forEach(obs => {
+            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+            ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+        });
+
+        // Lava
+        ctx.fillStyle = '#ff3300'; ctx.strokeStyle = '#e67e22';
+        customMapData.lavas.forEach(l => {
+            ctx.fillRect(l.x, l.y, l.w, l.h);
+            ctx.strokeRect(l.x, l.y, l.w, l.h);
+        });
+
+        // Water
+        ctx.fillStyle = 'rgba(52, 152, 219, 0.5)';
+        customMapData.waters.forEach(w => {
+            ctx.fillRect(w.x, w.y, w.w, w.h);
+        });
+
+        // Bounces
+        ctx.fillStyle = '#FF8C00'; ctx.strokeStyle = '#fff';
+        customMapData.bounces.forEach(b => {
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+            ctx.strokeRect(b.x, b.y, b.w, b.h);
+        });
+
+        // Pipes
+        ctx.fillStyle = '#2ecc71'; ctx.strokeStyle = '#27ae60';
+        customMapData.pipes.forEach(p => {
+            ctx.fillRect(p.x, p.y, p.w, p.h);
+            ctx.strokeRect(p.x, p.y, p.w, p.h);
+        });
+    }
+
+    function fireWeapon(owner, fromNetwork = false, angleOffset = 0) {
+        let p = (owner === 'p1') ? p1 : p2;
+        let angle = (p.aimAngle || 0) + angleOffset;
+        let weaponType = p.weapon;
+        
+        let stats = weaponStats[weaponType] || weaponStats['Water Gun'];
+        
+        let speed = stats.speed; let size = stats.size; let dmg = stats.dmg;
+        let color = stats.color; let life = stats.life; let spawnDist = stats.spawnDist;
+        let emoji = stats.emoji;
+
+        if (weaponType === 'Bubble Wand' || weaponType === 'Bubble Machine') {
+            angle += (Math.random() - 0.5) * 0.5; 
+        }
+
+        if (p.megaShot && angleOffset === 0) {
+            size *= 3;
+            dmg *= 3;
+            p.megaShot = false;
+        }
+
+        projectiles.push({
+            x: p.x + Math.cos(angle) * spawnDist, 
+            y: p.y + Math.sin(angle) * spawnDist, 
+            vx: Math.cos(angle) * speed, 
+            vy: Math.sin(angle) * speed, 
+            life: life, size: size, dmg: dmg, color: color, owner: owner, emoji: emoji
+        });
+
+        if (isOnline && !fromNetwork) {
+            if (owner === 'p1' && isHost) p1.fireTs = Date.now();
+            if (owner === 'p2' && !isHost) p2.fireTs = Date.now();
+        }
+    }
+
+    // --- ONLINE MULTIPLAYER LOGIC ---
+    function getLobbyRef(code) {
+        return doc(db, 'artifacts', appId, 'public', 'data', 'lobbies', code);
+    }
+
+    async function toggleLobbyReady() {
+        if (!isOnline || !lobbyCode) return;
+        let myRole = isHost ? 'p1' : 'p2';
+        
+        window.myLobbyReady = !window.myLobbyReady;
+        document.getElementById('btnLobbyReady').innerText = window.myLobbyReady ? "Cancel Ready" : "Ready Up!";
+        
+        if(window.myLobbyReady) {
+            document.getElementById('btnLobbyReady').style.backgroundColor = "var(--gold-primary)";
+            document.getElementById('btnLobbyReady').style.color = "#000";
+        } else {
+            document.getElementById('btnLobbyReady').style.backgroundColor = "var(--btn-bg)";
+            document.getElementById('btnLobbyReady').style.color = "var(--btn-text)";
+        }
+        
+        try {
+            await updateDoc(getLobbyRef(lobbyCode), {
+                [`${myRole}.readyLobby`]: window.myLobbyReady
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function hostOnlineGame() {
+        if (!currentUser) return alert("Connecting to server, please wait...");
+        lobbyCode = Math.floor(1000 + Math.random() * 9000).toString();
+        isHost = true;
+        isOnline = true;
+        window.myLobbyReady = false;
+        
+        showScreen('waitingScreen');
+        document.getElementById('lobbyCodeDisplay').innerText = lobbyCode;
+        
+        let pName = document.getElementById('playerNameInput').value.trim() || myProfile.username;
+
+        try {
+            const docRef = getLobbyRef(lobbyCode);
+            await setDoc(docRef, { 
+                state: 'waiting',
+                p1: { name: pName, readyLobby: false, mapVote: 'Classic' }
+            });
+            
+            window.startingArena = false;
+            window.startingLoadout = false;
+
+            unsubscribeLobby = onSnapshot(docRef, (snap) => {
+                if (!snap.exists()) return;
+                const data = snap.data();
+                
+                if (data.state === 'lobby') {
+                    if (state !== 'lobby') {
+                        state = 'lobby';
+                        showScreen('lobbyScreen');
+                        document.getElementById('lobbyScreenCode').innerText = lobbyCode;
+                        document.getElementById('btnLobbyReady').innerText = "Ready Up!";
+                        document.getElementById('btnLobbyReady').style.backgroundColor = "var(--btn-bg)";
+                        document.getElementById('btnLobbyReady').style.color = "var(--btn-text)";
+                        window.myLobbyReady = false;
+                    }
+                    
+                    document.getElementById('lobbyP1Name').innerText = data.p1?.name || "Player 1";
+                    lobbyP1NameText = data.p1?.name || "Player 1";
+                    document.getElementById('lobbyP1Status').innerText = data.p1?.readyLobby ? "Ready" : "Not Ready";
+                    document.getElementById('lobbyP1Status').style.color = data.p1?.readyLobby ? "#2ecc71" : "#e74c3c";
+                    
+                    document.getElementById('lobbyP2Name').innerText = data.p2?.name || "Waiting...";
+                    lobbyP2NameText = data.p2?.name || "Player 2";
+                    document.getElementById('lobbyP2Status').innerText = data.p2?.readyLobby ? "Ready" : "Not Ready";
+                    document.getElementById('lobbyP2Status').style.color = data.p2?.readyLobby ? "#2ecc71" : "#e74c3c";
+
+                    if (isHost && data.p1?.readyLobby && data.p2?.readyLobby && !window.startingLoadout) {
+                        window.startingLoadout = true;
+                        updateDoc(docRef, { state: 'loadout' });
+                    }
+                }
+
+                if (data.state === 'loadout') {
+                    if (state !== 'loadout') {
+                        state = 'loadout';
+                        showScreen('loadoutScreen');
+                        document.getElementById('localLoadoutDiv').style.display = 'none';
+                        document.getElementById('onlineLoadoutDiv').style.display = 'block';
+                        
+                        myMapVote = 'Classic';
+                        oppMapVote = 'Classic';
+                        
+                        // Pull 8 random map options
+                        let allMapNames = Object.keys(MAPS);
+                        currentMapSelectionKeys = [...allMapNames].sort(() => 0.5 - Math.random()).slice(0, 8);
+                        renderMapGrid(); 
+                        
+                        loadoutData.p1 = { choices: getRandomWeapons(3), rerolls: 2, ready: false, weapon: '' };
+                        loadoutData.p2 = { choices: getRandomWeapons(3), rerolls: 2, ready: false, weapon: '' };
+                        loadoutData.p1.weapon = loadoutData.p1.choices[0];
+                        loadoutData.p2.weapon = loadoutData.p2.choices[0];
+                        updateLoadoutUI();
+                    }
+                    
+                    if (data.p1) { myMapVote = data.p1.mapVote || 'Classic'; loadoutData.p1.ready = data.p1.ready || false; }
+                    if (data.p2) { oppMapVote = data.p2.mapVote || 'Classic'; loadoutData.p2.ready = data.p2.ready || false; }
+                    renderMapGrid();
+                    
+                    if (data.p2) {
+                        document.getElementById('oppReadyText').innerText = data.p2.ready ? "READY!" : "Choosing Weapon...";
+                        document.getElementById('oppReadyText').style.color = data.p2.ready ? "#2ecc71" : "#e74c3c";
+                    }
+
+                    // Host transitions when both are ready
+                    if (isHost && data.p1?.ready && data.p2?.ready && !window.startingArena) {
+                        window.startingArena = true;
+                        let p1Vote = data.p1.mapVote || 'Classic';
+                        let p2Vote = data.p2.mapVote || 'Classic';
+                        let finalMap = Math.random() < 0.5 ? p1Vote : p2Vote;
+                        if (p1Vote === p2Vote) finalMap = p1Vote;
+                        
+                        updateDoc(docRef, { state: 'playing', map: finalMap });
+                    }
+                }
+
+                if (data.state === 'playing' && state === 'loadout') {
+                    selectedMapName = data.map || 'Classic';
+                    enterArenaOnline(data);
+                }
+
+                if (data.state === 'playing' && state === 'arena') {
+                    if (isHost && data.p2) {
+                        // Guard check to prevent undefined/NaN coordinates from breaking state
+                        if (data.p2.x !== undefined && data.p2.y !== undefined) {
+                            p2.targetX = data.p2.x;
+                            p2.targetY = data.p2.y;
+                            p2.vx = data.p2.vx || 0;
+                            p2.vy = data.p2.vy || 0;
+                        }
+                        p2.hp = data.p2.hp !== undefined ? data.p2.hp : p2.hp;
+                        p2.aimAngle = data.p2.aimAngle !== undefined ? data.p2.aimAngle : Math.PI; 
+                        p2.shieldEndTime = data.p2.shieldEndTime || 0;
+                        if (data.p2.fireTs > p2.fireTs) { p2.fireTs = data.p2.fireTs; fireWeapon('p2', true); }
+                        if (data.p2.megaShot !== undefined) p2.megaShot = data.p2.megaShot;
+                        if (data.p2.phasing !== undefined) p2.phasing = data.p2.phasing;
+                    }
+                }
+            });
+        } catch (e) {
+            console.error(e);
+            alert("Error hosting lobby.");
+            showScreen('menuScreen');
+        }
+    }
+
+    async function joinOnlineGame() {
+        if (!currentUser) return alert("Connecting to server, please wait...");
+        const code = document.getElementById('joinCode').value.toUpperCase();
+        if (code.length !== 4) return alert("Invalid code");
+        
+        isHost = false;
+        isOnline = true;
+        lobbyCode = code;
+        window.myLobbyReady = false;
+        
+        let pName = document.getElementById('playerNameInput').value.trim() || myProfile.username;
+
+        try {
+            const docRef = getLobbyRef(lobbyCode);
+            const snap = await getDoc(docRef);
+            
+            if (snap.exists() && (snap.data().state === 'waiting' || snap.data().state === 'lobby')) {
+                await updateDoc(docRef, { 
+                    state: 'lobby',
+                    p2: { name: pName, readyLobby: false, mapVote: 'Classic' }
+                });
+                
+                unsubscribeLobby = onSnapshot(docRef, (snap) => {
+                    if (!snap.exists()) return;
+                    const data = snap.data();
+                    
+                    if (data.state === 'lobby') {
+                        if (state !== 'lobby') {
+                            state = 'lobby';
+                            showScreen('lobbyScreen');
+                            document.getElementById('lobbyScreenCode').innerText = lobbyCode;
+                            document.getElementById('btnLobbyReady').innerText = "Ready Up!";
+                            document.getElementById('btnLobbyReady').style.backgroundColor = "var(--btn-bg)";
+                            document.getElementById('btnLobbyReady').style.color = "var(--btn-text)";
+                            window.myLobbyReady = false;
+                        }
+                        
+                        document.getElementById('lobbyP1Name').innerText = data.p1?.name || "Host";
+                        lobbyP1NameText = data.p1?.name || "Host";
+                        document.getElementById('lobbyP1Status').innerText = data.p1?.readyLobby ? "Ready" : "Not Ready";
+                        document.getElementById('lobbyP1Status').style.color = data.p1?.readyLobby ? "#2ecc71" : "#e74c3c";
+                        
+                        document.getElementById('lobbyP2Name').innerText = data.p2?.name || "Player 2";
+                        lobbyP2NameText = data.p2?.name || "Player 2";
+                        document.getElementById('lobbyP2Status').innerText = data.p2?.readyLobby ? "Ready" : "Not Ready";
+                        document.getElementById('lobbyP2Status').style.color = data.p2?.readyLobby ? "#2ecc71" : "#e74c3c";
+                    }
+
+                    if (data.state === 'loadout') {
+                        if (state !== 'loadout') {
+                            state = 'loadout';
+                            showScreen('loadoutScreen');
+                            document.getElementById('localLoadoutDiv').style.display = 'none';
+                            document.getElementById('onlineLoadoutDiv').style.display = 'block';
+                            
+                            myMapVote = 'Classic';
+                            oppMapVote = 'Classic';
+                            renderMapGrid(); 
+                            
+                            loadoutData.p1 = { choices: getRandomWeapons(3), rerolls: 2, ready: false, weapon: '' };
+                            loadoutData.p2 = { choices: getRandomWeapons(3), rerolls: 2, ready: false, weapon: '' };
+                            loadoutData.p1.weapon = loadoutData.p1.choices[0];
+                            loadoutData.p2.weapon = loadoutData.p2.choices[0];
+                            updateLoadoutUI();
+                        }
+                        
+                        if (data.p2) { myMapVote = data.p2.mapVote || 'Classic'; loadoutData.p2.ready = data.p2.ready || false; }
+                        if (data.p1) { oppMapVote = data.p1.mapVote || 'Classic'; loadoutData.p1.ready = data.p1.ready || false; }
+                        renderMapGrid();
+                        
+                        if (data.p1) {
+                            document.getElementById('oppReadyText').innerText = data.p1.ready ? "READY!" : "Choosing Weapon...";
+                            document.getElementById('oppReadyText').style.color = data.p1.ready ? "#2ecc71" : "#e74c3c";
+                        }
+                    }
+
+                    if (data.state === 'playing' && state === 'loadout') {
+                        selectedMapName = data.map || 'Classic';
+                        enterArenaOnline(data);
+                    }
+
+                    if (data.state === 'playing' && state === 'arena') {
+                        if (!isHost && data.p1) {
+                            // Guard check to prevent undefined/NaN coordinates from breaking state
+                            if (data.p1.x !== undefined && data.p1.y !== undefined) {
+                                p1.targetX = data.p1.x;
+                                p1.targetY = data.p1.y;
+                                p1.vx = data.p1.vx || 0;
+                                p1.vy = data.p1.vy || 0;
+                            }
+                            p1.hp = data.p1.hp !== undefined ? data.p1.hp : p1.hp;
+                            p1.aimAngle = data.p1.aimAngle !== undefined ? data.p1.aimAngle : 0; 
+                            p1.shieldEndTime = data.p1.shieldEndTime || 0;
+                            if (data.p1.fireTs > p1.fireTs) { p1.fireTs = data.p1.fireTs; fireWeapon('p1', true); }
+                            if (data.p1.megaShot !== undefined) p1.megaShot = data.p1.megaShot;
+                            if (data.p1.phasing !== undefined) p1.phasing = data.p1.phasing;
+                        }
+                    }
+                });
+
+            } else {
+                alert("Lobby not found or already full.");
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error joining lobby.");
+        }
+    }
+
+    function enterArenaOnline(data) {
+        p1 = { 
+            x: 200, y: 250, vx: 0, vy: 0, size: 22, color: '#FFD700', hp: 100, 
+            weapon: data.p1?.weapon || 'Water Gun',
+            fireTs: 0, aimAngle: 0, nextAbilityTime: 0, shieldEndTime: 0, megaShot: false, phasing: false,
+            targetX: 200, targetY: 250
+        };
+        p2 = { 
+            x: 1000, y: 250, vx: 0, vy: 0, size: 22, color: '#e74c3c', hp: 100, 
+            weapon: data.p2?.weapon || 'Water Gun',
+            fireTs: 0, aimAngle: Math.PI, nextAbilityTime: 0, shieldEndTime: 0, megaShot: false, phasing: false,
+            targetX: 1000, targetY: 250
+        };
+        projectiles = [];
+        state = 'arena';
+        showScreen(null);
+        updateHUD();
+
+        // Reset round end tracking
+        roundOver = false;
+        roundOverTime = 0;
+        winnerName = "";
+        document.getElementById('deathWinnerDisplay').innerText = "";
+
+        const docRef = getLobbyRef(lobbyCode);
+        syncInterval = setInterval(() => {
+            if (state !== 'arena') return;
+            const payload = isHost ? {
+                p1: { x: p1.x, y: p1.y, vx: p1.vx, vy: p1.vy, weapon: p1.weapon, hp: p1.hp, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: p1.shieldEndTime, megaShot: p1.megaShot, phasing: p1.phasing }
+            } : {
+                p2: { x: p2.x, y: p2.y, vx: p2.vx, vy: p2.vy, weapon: p2.weapon, hp: p2.hp, fireTs: p2.fireTs, aimAngle: p2.aimAngle, shieldEndTime: p2.shieldEndTime, megaShot: p2.megaShot, phasing: p2.phasing }
+            };
+            updateDoc(docRef, payload).catch(e => console.error(e));
+        }, 50);
+    }
+
+    function cancelLobby() {
+        cleanupNetwork();
+        showScreen('menuScreen');
+    }
+
+    function cleanupNetwork() {
+        isOnline = false;
+        if (unsubscribeLobby) { unsubscribeLobby(); unsubscribeLobby = null; }
+        if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
+    }
+
+    // --- INPUT HANDLING ---
+    window.addEventListener('keydown', (e) => {
+        if (isBinding) {
+            kb[isBinding.player][isBinding.action] = e.code;
+            document.getElementById(`btn_${isBinding.player}_${isBinding.action}`).innerText = e.code;
+            isBinding = null;
+            return;
+        }
+
+        keysPressed[e.code] = true;
+
+        if (state === 'flappy' && (e.code === 'Space' || e.code === kb.p1.jump)) {
+            bird.vy = JUMP_FORCE;
+        }
+
+        if (state === 'arena') {
+            if (roundOver) return; // Completely freeze ability/movement activations on round end!
+            if (!isOnline) {
+                // Local P1
+                if (e.code === 'Space' || e.code === kb.p1.jump) p1.vy = JUMP_FORCE;
+                if (e.code === kb.p1.special) useAbility('p1');
+
+                // Local P2
+                if (e.code === kb.p2.jump) p2.vy = JUMP_FORCE;
+                if (e.code === 'Enter' || e.code === 'NumpadEnter') fireWeapon('p2');
+                if (e.code === kb.p2.special) useAbility('p2');
+            } else {
+                // Online Local User uses P1 keys
+                let meObj = isHost ? p1 : p2;
+                let meRole = isHost ? 'p1' : 'p2';
+                if (e.code === 'Space' || e.code === kb.p1.jump) meObj.vy = JUMP_FORCE;
+                if (e.code === kb.p1.special) useAbility(meRole);
+            }
+        }
+
+        if (e.code === 'Escape') backToMenu();
+    });
+
+    window.addEventListener('keyup', (e) => {
+        keysPressed[e.code] = false;
+    });
+
+    window.addEventListener('mousedown', (e) => {
+        if (state === 'flappy') bird.vy = JUMP_FORCE;
+        if (state === 'arena' && e.button === 0) {
+            if (roundOver) return; // Block shooting on round end!
+            if (!isOnline) fireWeapon('p1'); 
+            else { let me = isHost ? 'p1' : 'p2'; fireWeapon(me); }
+        }
+    });
+
+    // --- GAME LOOP ---
+    function gameLoop(timestamp) {
+        requestAnimationFrame(gameLoop);
+        let elapsed = timestamp - lastTime;
+        if (elapsed > fpsInterval) {
+            lastTime = timestamp - (elapsed % fpsInterval);
+
+            if (state === 'flappy') {
+                frameCount++; updateFlappy(); drawFlappy();
+            } else if (state === 'arena') {
+                updateArena(); drawArena();
+            } else if (state === 'editor') {
+                drawEditorGrid();
+            } else if (state === 'menu' || state === 'loadout' || state === 'lobby') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    }
+
+    updateHUD();
+    loadLocalProfile();
+    requestAnimationFrame(gameLoop);
+
+</script>
+</body>
+</html>
