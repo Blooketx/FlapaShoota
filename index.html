@@ -252,7 +252,6 @@
             overflow: hidden;
         }
 
-        /* Leaderboard Modal Styling */
         .leaderboard-tabs {
             display: flex;
             gap: 10px;
@@ -310,7 +309,6 @@
             
             <hr>
             
-            <!-- Google Login Button -->
             <button onclick="googleLogin()" style="background: #ffffff; color: #333333; border-color: #cccccc; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;">
                 <svg viewBox="0 0 24 24" width="18" height="18" style="display: inline-block; vertical-align: middle;">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -572,12 +570,10 @@
         return img;
     }
 
-    // LOAD CUSTOM BIRD ASSETS (Looks for local GitHub project files first, with secure cloud fallbacks)
     const imgBirdBody = createRobustImage("Body.png", "https://media.discordapp.net/attachments/1284984646043439135/1521442063898382427/Untitled111_20260630060055.png?ex=6a44d8d7&is=6a438757&hm=15345c5be9c445ea5e031d7c3b69d917f08154bc231e8ff5c6e7261bc3beabf5&=&format=webp&quality=lossless");
     const imgBirdBeak = createRobustImage("Beak.png", "https://media.discordapp.net/attachments/1284984646043439135/1521442064250835075/Untitled111_20260630060042.png?ex=6a44d8d7&is=6a438757&hm=d85109803d3a1b60242350ff5ba03648aa2160dd55432c309a8ecc03c4eb3686&=&format=webp&quality=lossless");
     const imgBirdEyes = createRobustImage("Eyes.png", "https://media.discordapp.net/attachments/1284984646043439135/1521442056533446686/Untitled111_20260630060248.png?ex=6a44d8d5&is=6a438755&hm=9c36aef006ae43559d62ef39dc4f55fe98aa6066864597313fcc5343aa226f39&=&format=webp&quality=lossless");
 
-    // WEB AUDIO API LIGHTWEIGHT ARCADE FX SYNTHESIZER
     class SoundSynthesizer {
         constructor() {
             this.ctx = null;
@@ -665,7 +661,9 @@
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
     const auth = getAuth(app); 
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'ffa-flapa';
+    
+    // Hardcoded globally synced appId to break sandbox barriers and work perfectly on GitHub Pages
+    const appId = 'ffa-flapa-ultimate';
     
     let currentUser = null;
     const provider = new GoogleAuthProvider();
@@ -890,7 +888,7 @@
         ["Compass", "🧭"], ["Magnifying Glass", "🔍"], ["Glow Stick", "🔦"], ["Flashlight", "🔦"], ["Lantern", "🏮"],
         ["Umbrella", "☂️"], ["Walking Stick", "🦯"], ["Magic Wand", "🪄"], ["Crystal Ball", "🔮"], ["Teddy Bear", "🧸"],
         ["Action Figure", "🤖"], ["Doll", "🪆"], ["Lego Brick", "🧱"], ["Puzzle Piece", "🧩"], ["Board Game", "🎲"],
-        ["Deck of Cards", "🃏"], ["Dice", "🎲"], ["Domino", "🁣"], ["Frisbee", "🥏"], ["Kite", "🪁"],
+        ["Deck of Cards", "🃏"], ["Dice", "🎲"], ["Domino", "𫛘"], ["Frisbee", "🥏"], ["Kite", "🪁"],
         ["Jump Rope", "🪢"], ["Hula Hoop", "⭕"], ["Beach Ball", "🏖️"], ["Water Balloon", "🎈"], ["Bubble Machine", "🫧"],
         ["Left Shoe", "👞"], ["Math Homework", "📝"], ["Confused Pigeon", "🐦"], ["Microwave Burrito", "🌯"],
         ["Uncooked Pasta", "🍝"], ["A Single Bean", "𫛘"], ["Existential Dread (Toy)", "👻"], ["Spicy Meatball", "🧆"],
@@ -1170,7 +1168,6 @@
         selectMap(randMap);
     }
 
-    // TINT ENGINE UTILIZING OFF-SCREEN CANVAS BLENDING FOR FULL CUSTOM HEX COLORING
     const tintCacheMap = new Map();
     function renderTintedImage(img, color) {
         if (!img.complete || img.naturalWidth === 0) return null;
@@ -1185,19 +1182,15 @@
         tintCanvas.height = img.naturalHeight;
         const tintCtx = tintCanvas.getContext('2d');
 
-        // Draw original
         tintCtx.drawImage(img, 0, 0);
 
-        // Overlay with target color maintaining alpha mapping
         tintCtx.globalCompositeOperation = 'source-atop';
         tintCtx.fillStyle = color;
         tintCtx.fillRect(0, 0, tintCanvas.width, tintCanvas.height);
 
-        // Blend with original using multiply to preserve highlights and black lines
         tintCtx.globalCompositeOperation = 'multiply';
         tintCtx.drawImage(img, 0, 0);
 
-        // Put clean outlines back on top
         tintCtx.globalCompositeOperation = 'destination-atop';
         tintCtx.drawImage(img, 0, 0);
 
@@ -1474,11 +1467,9 @@
         listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: var(--gold-light); font-weight: bold;">Loading Scores...</div>`;
 
         try {
-            // Wait for custom/anonymous auth before performing queries (RULE 3 compliance)
             if (!auth.currentUser) return;
             const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboards');
             
-            // STRICT COMPLIANCE WITH RULE 2: No orderBy, where with multiple conditions, or limit in query!
             const q = query(scoresRef);
             const querySnapshot = await getDocs(q);
             
@@ -1487,7 +1478,6 @@
                 scoresList.push(docSnap.data());
             });
 
-            // Perform sorting and filtering strictly in JavaScript memory
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
             const currentMonthStr = today.toISOString().slice(0, 7);
@@ -1501,10 +1491,7 @@
                 filteredList = scoresList; 
             }
 
-            // Memory sort
             filteredList.sort((a, b) => b.score - a.score);
-
-            // Slice to top 15 results in memory
             filteredList = filteredList.slice(0, 15);
 
             listDiv.innerHTML = '';
@@ -1533,7 +1520,7 @@
 
     async function submitScoreToLeaderboard(finalScore) {
         if (finalScore <= 0) return;
-        if (!auth.currentUser) return; // Guard operation with authentication status check (RULE 3 compliance)
+        if (!auth.currentUser) return;
         
         const playerDisplayName = document.getElementById('playerNameInput').value.trim() || "GuestPlayer";
         const today = new Date();
@@ -1841,7 +1828,6 @@
         bird.vy += GRAVITY;
         bird.y += bird.vy;
 
-        // Emit beautiful moving trail particles (Photons)
         emitPhoton(bird.x, bird.y, -2, bird.vy * 0.2, '#FFD700');
 
         if (frameCount % 90 === 0) {
@@ -1884,7 +1870,6 @@
     function drawFlappy() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Render trail particles underneath everything
         drawPhotons();
 
         drawDetailedBird(bird.x, bird.y, bird.size, '#FFD700', bird.vy, 1, 'p1');
@@ -1900,7 +1885,6 @@
         });
     }
 
-    // PHOTON MOVEMENT PARTICLE GENERATOR
     function emitPhoton(x, y, vx, vy, color) {
         if (Math.random() < 0.45) {
             photonParticles.push({
@@ -2018,7 +2002,6 @@
             p.vx = Math.cos(p.aimAngle) * 20;
             p.vy = Math.sin(p.aimAngle) * 20;
             p.nextAbilityTime = Date.now() + 3000;
-            // Flare brilliant photon particles
             for (let i = 0; i < 15; i++) {
                 emitPhoton(p.x, p.y, -p.vx * 0.5, -p.vy * 0.5, '#FFF59D');
             }
@@ -2179,7 +2162,6 @@
 
         updateHUD();
 
-        // Check overall tournament victory condition
         if (p1RoundWins >= 3 || p2RoundWins >= 3) {
             matchOver = true;
             roundOver = true;
@@ -2201,7 +2183,6 @@
                 }
             }
 
-            // Sync overall matchOver flag to firestore if online
             if (isOnline && isHost) {
                 updateDoc(getLobbyRef(lobbyCode), {
                     matchOver: true,
@@ -2214,7 +2195,6 @@
                 }).catch(e=>console.error(e));
             }
         } else {
-            // Initiate round intermission transition
             roundTransition = true;
             roundTransitionEndTime = Date.now() + 3000;
             
@@ -2233,7 +2213,6 @@
     }
 
     function updateArena() {
-        // Handle transitioning between rounds
         if (roundTransition) {
             if (isHost || !isOnline) {
                 if (Date.now() > roundTransitionEndTime) {
@@ -2248,7 +2227,6 @@
                     }
                 }
             }
-            // Freeze positions dynamically at spawn locations
             p1.x = 200; p1.y = 250; p1.vx = 0; p1.vy = 0;
             p2.x = 1000; p2.y = 250; p2.vx = 0; p2.vy = 0;
             projectiles = [];
@@ -2262,7 +2240,6 @@
             return;
         }
 
-        // Host handles authoritatively calculating round end checks
         if (isHost || !isOnline) {
             if (!roundOver && !matchOver && !roundTransition) {
                 if (p1.hp <= 0) {
@@ -2273,7 +2250,6 @@
             }
         }
 
-        // EMIT PHOTON EMISSIONS IN RESPONSE TO MOVEMENT PHYSICS
         if (Math.abs(p1.vx) > 0.5 || Math.abs(p1.vy) > 0.5) {
             emitPhoton(p1.x, p1.y, -p1.vx * 0.3, -p1.vy * 0.3, loadoutData.p1.avatar?.bodyColor || '#FFD700');
         }
@@ -2346,12 +2322,8 @@
                 me.aimAngle = Math.atan2(mouseY - me.y, mouseX - me.x);
 
                 if (other.targetX !== undefined && other.targetY !== undefined) {
-                    // Project location ahead using other player's predicted velocity vector (dead reckoning)
-                    other.targetX += (other.vx || 0);
-                    other.targetY += (other.vy || 0);
-                    
-                    other.x += (other.targetX - other.x) * 0.18;
-                    other.y += (other.targetY - other.y) * 0.18;
+                    other.x += (other.targetX - other.x) * 0.35;
+                    other.y += (other.targetY - other.y) * 0.35;
                 } else {
                     other.x += other.vx;
                     other.y += other.vy;
@@ -2384,7 +2356,6 @@
                         p.x = pipe.destX;
                         p.y = pipe.destY;
                         p.vy = 0;
-                        // Burst teleport photons!
                         for (let k = 0; k < 12; k++) {
                             emitPhoton(pipe.x + pipe.w/2, pipe.y + pipe.h/2, (Math.random()-0.5)*5, (Math.random()-0.5)*5, '#2ecc71');
                             emitPhoton(pipe.destX, pipe.destY, (Math.random()-0.5)*5, (Math.random()-0.5)*5, '#2ecc71');
@@ -2400,7 +2371,6 @@
             proj.y += proj.vy;
             proj.life--;
 
-            // Make weapon projectiles leave small color matching photon sparks!
             if (Math.random() < 0.2) {
                 emitPhoton(proj.x, proj.y, -proj.vx * 0.1, -proj.vy * 0.1, proj.color);
             }
@@ -2414,7 +2384,6 @@
                 });
             }
             if (hitObstacle) {
-                // Spark splash effects
                 for (let k = 0; k < 4; k++) {
                     emitPhoton(proj.x, proj.y, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, proj.color);
                 }
@@ -2446,7 +2415,6 @@
     function drawArena() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Draw photon trails/sparks
         drawPhotons();
 
         let mapData = MAPS[selectedMapName];
@@ -2541,7 +2509,6 @@
             ctx.fillText(`P2: Arrows Move | Up Arrow Flap | ${kb.p2.down.replace('Arrow','')} Phase | Enter Shoot | ${kb.p2.special.replace('Key','')} Ability`, 10, canvas.height - 20);
         }
 
-        // Draw Intermission banner
         if (roundTransition) {
             ctx.save();
             ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
@@ -2781,7 +2748,6 @@
                         if (data.p2.phasing !== undefined) p2.phasing = data.p2.phasing;
                         if (data.p2.avatar) loadoutData.p2.avatar = data.p2.avatar;
                     } else if (!isHost && data.p1) {
-                        // Mirror authoritative tournament status directly from database
                         if (data.p1RoundWins !== undefined) p1RoundWins = data.p1RoundWins;
                         if (data.p2RoundWins !== undefined) p2RoundWins = data.p2RoundWins;
                         if (data.matchOver !== undefined) matchOver = data.matchOver;
@@ -2796,7 +2762,6 @@
 
                 if (data.p1?.rematchRequested && data.p2?.rematchRequested) {
                     if (isHost) {
-                        // Host triggers a reload back to loadouts
                         updateDoc(docRef, {
                             state: 'loadout',
                             p1RoundWins: 0,
@@ -2834,7 +2799,8 @@
 
     async function joinOnlineGame() {
         if (!auth.currentUser) return showToast("Connecting to server, please wait...");
-        const code = document.getElementById('joinCode').value.toUpperCase();
+        
+        const code = document.getElementById('joinCode').value.toUpperCase().trim();
         if (code.length !== 4) return showToast("Invalid code length.");
         
         isHost = false;
@@ -2948,7 +2914,6 @@
                             if (data.p1.phasing !== undefined) p1.phasing = data.p1.phasing;
                             if (data.p1.avatar) loadoutData.p1.avatar = data.p1.avatar;
 
-                            // Authoritative multi-round state mapping
                             if (data.p1RoundWins !== undefined) p1RoundWins = data.p1RoundWins;
                             if (data.p2RoundWins !== undefined) p2RoundWins = data.p2RoundWins;
                             if (data.matchOver !== undefined) matchOver = data.matchOver;
@@ -2959,7 +2924,6 @@
                             if (data.roundOverTime !== undefined) roundOverTime = data.roundOverTime;
                             if (data.winnerName !== undefined) winnerName = data.winnerName;
 
-                            // Coordinate Reset Sync with round indices
                             if (data.roundIndex !== undefined && data.roundIndex !== lastSyncedRoundIndex) {
                                 lastSyncedRoundIndex = data.roundIndex;
                                 triggerNextRound();
@@ -3020,7 +2984,7 @@
         document.getElementById('deathWinnerDisplay').innerText = "";
 
         let dbWriteFails = 0;
-        let currentSyncIntervalTime = 250; // default 250ms interval (4 writes/sec) to drastically reduce quota usage
+        let currentSyncIntervalTime = 250; 
         const docRef = getLobbyRef(lobbyCode);
 
         function startSyncLoop(intervalTime) {
@@ -3028,7 +2992,6 @@
             syncInterval = setInterval(() => {
                 if (state !== 'arena') return;
                 
-                // Compile player coordinates to sync
                 const payload = isHost ? {
                     p1: { x: p1.x, y: p1.y, vx: p1.vx, vy: p1.vy, weapon: p1.weapon, hp: p1.hp, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: p1.shieldEndTime, megaShot: p1.megaShot, phasing: p1.phasing, avatar: myAvatar, rematchRequested: false },
                     p1RoundWins: p1RoundWins,
@@ -3052,7 +3015,6 @@
                         if (dbWriteFails === 1) {
                             showToast("Firestore Quota Exceeded! Adapting lag prediction & slowing sync...");
                         }
-                        // Step-down database update interval incrementally to prevent further locks
                         if (currentSyncIntervalTime < 2000) {
                             currentSyncIntervalTime += 500;
                             startSyncLoop(currentSyncIntervalTime);
