@@ -724,6 +724,8 @@
     let roundTransition = false;
     let roundWinnerAlertText = "";
     let roundTransitionEndTime = 0;
+    let roundIndex = 0;
+    let lastSyncedRoundIndex = -1;
 
     // Leaderboard Tabs State
     let currentLeaderboardTab = 'daily';
@@ -877,7 +879,7 @@
             obs: [{x: 100, y: 350, w: 400, h: 100}, {x: 700, y: 350, w: 400, h: 100}],
             pipes: [{x: 50, y: 650, w: 60, h: 60, destX: 1150, destY: 100}, {x: 1100, y: 650, w: 60, h: 60, destX: 50, destY: 100}]
         },
-        'Chrono Void': { // NEW MAP
+        'Chrono Void': {
             obs: [{x: 100, y: 100, w: 100, h: 100}, {x: 1000, y: 100, w: 100, h: 100}, {x: 400, y: 350, w: 400, h: 80}, {x: 100, y: 600, w: 100, h: 100}, {x: 1000, y: 600, w: 100, h: 100}],
             pipes: [{x: 550, y: 700, w: 100, h: 50, destX: 600, destY: 150}]
         }
@@ -1015,6 +1017,7 @@
                 p2RoundWins = 0;
                 matchOver = false;
                 roundTransition = false;
+                roundIndex = 0;
                 enterArenaLocal();
             }
         }
@@ -1225,8 +1228,6 @@
         }
         avatarCtx.restore();
 
-        // Note: Vector wings animation is completely removed from rendering as requested.
-
         // Draw hats/accessories
         if (settings.hat === 'crown') {
             avatarCtx.fillStyle = '#ffd700';
@@ -1363,9 +1364,12 @@
         listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: var(--gold-light); font-weight: bold;">Loading Scores...</div>`;
 
         try {
+            // Wait for custom/anonymous auth before performing queries (RULE 3 compliance)
+            if (!auth.currentUser) return;
             const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboards');
-            // Fetch top 100 overall to allow dynamic robust sorting and filtering client-side
-            const q = query(scoresRef, orderBy('score', 'desc'), limit(100));
+            
+            // STRICT COMPLIANCE WITH RULE 2: No orderBy, where with multiple conditions, or limit in query!
+            const q = query(scoresRef);
             const querySnapshot = await getDocs(q);
             
             let scoresList = [];
@@ -1373,7 +1377,7 @@
                 scoresList.push(docSnap.data());
             });
 
-            // Filter client-side
+            // Perform sorting and filtering strictly in JavaScript memory
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
             const currentMonthStr = today.toISOString().slice(0, 7);
@@ -1384,10 +1388,13 @@
             } else if (tabName === 'monthly') {
                 filteredList = scoresList.filter(item => item.monthString === currentMonthStr);
             } else {
-                filteredList = scoresList; // All time
+                filteredList = scoresList; 
             }
 
-            // Slice to top 15 results
+            // Memory sort
+            filteredList.sort((a, b) => b.score - a.score);
+
+            // Slice to top 15 results in memory
             filteredList = filteredList.slice(0, 15);
 
             listDiv.innerHTML = '';
@@ -1416,6 +1423,8 @@
 
     async function submitScoreToLeaderboard(finalScore) {
         if (finalScore <= 0) return;
+        if (!auth.currentUser) return; // Guard operation with authentication status check (RULE 3 compliance)
+        
         const playerDisplayName = document.getElementById('playerNameInput').value.trim() || "GuestPlayer";
         const today = new Date();
         const dateString = today.toISOString().split('T')[0];
@@ -1468,6 +1477,9 @@
                     p1RoundWins: 0,
                     p2RoundWins: 0,
                     matchOver: false,
+                    roundTransition: false,
+                    roundOver: false,
+                    roundIndex: 0,
                     p2: { 
                         name: pName, 
                         readyLobby: true, 
@@ -1489,6 +1501,9 @@
                     p1RoundWins: 0,
                     p2RoundWins: 0,
                     matchOver: false,
+                    roundTransition: false,
+                    roundOver: false,
+                    roundIndex: 0,
                     p1: { 
                         name: pName, 
                         readyLobby: true, 
@@ -1561,6 +1576,7 @@
         p2RoundWins = 0;
         matchOver = false;
         roundTransition = false;
+        roundIndex = 0;
 
         projectiles = [];
         state = 'arena';
@@ -1655,7 +1671,6 @@
             if (isBotGame) {
                 triggerBotMatchmakingFallback();
             } else if (isOnline) {
-                // Online Rematch requested
                 let myRole = isHost ? 'p1' : 'p2';
                 showToast("Requested Rematch. Waiting for opponent...");
                 document.getElementById('respawnBtn').disabled = true;
@@ -1965,10 +1980,22 @@
         p1.y = 250;
         p1.vx = 0;
         p1.vy = 0;
+        p1.targetX = 200;
+        p1.targetY = 250;
+        p1.shieldEndTime = 0;
+        p1.nextAbilityTime = 0;
+        p1.megaShot = false;
+        
         p2.x = 1000;
         p2.y = 250;
         p2.vx = 0;
         p2.vy = 0;
+        p2.targetX = 1000;
+        p2.targetY = 250;
+        p2.shieldEndTime = 0;
+        p2.nextAbilityTime = 0;
+        p2.megaShot = false;
+
         projectiles = [];
         roundOver = false;
         roundTransition = false;
@@ -1986,7 +2013,7 @@
 
         updateHUD();
 
-        // Check overall tournament victor condition (First to 3 round wins)
+        // Check overall tournament victory condition
         if (p1RoundWins >= 3 || p2RoundWins >= 3) {
             matchOver = true;
             roundOver = true;
@@ -2013,34 +2040,70 @@
                 updateDoc(getLobbyRef(lobbyCode), {
                     matchOver: true,
                     p1RoundWins: p1RoundWins,
-                    p2RoundWins: p2RoundWins
+                    p2RoundWins: p2RoundWins,
+                    roundOver: true,
+                    roundOverTime: roundOverTime,
+                    winnerName: winnerName,
+                    roundTransition: false
                 }).catch(e=>console.error(e));
             }
         } else {
-            // Initiate round intermission transition (3 seconds)
+            // Initiate round intermission transition
             roundTransition = true;
             roundTransitionEndTime = Date.now() + 3000;
+            
+            if (isOnline && isHost) {
+                roundIndex++;
+                updateDoc(getLobbyRef(lobbyCode), {
+                    roundTransition: true,
+                    roundTransitionEndTime: roundTransitionEndTime,
+                    roundWinnerAlertText: roundWinnerAlertText,
+                    p1RoundWins: p1RoundWins,
+                    p2RoundWins: p2RoundWins,
+                    roundIndex: roundIndex
+                }).catch(e=>console.error(e));
+            }
         }
     }
 
     function updateArena() {
         // Handle transitioning between rounds
         if (roundTransition) {
-            if (Date.now() > roundTransitionEndTime) {
-                triggerNextRound();
+            if (isHost || !isOnline) {
+                if (Date.now() > roundTransitionEndTime) {
+                    triggerNextRound();
+                    if (isOnline && isHost) {
+                        updateDoc(getLobbyRef(lobbyCode), {
+                            roundTransition: false,
+                            roundOver: false,
+                            p1: { x: 200, y: 250, vx: 0, vy: 0, hp: 100, weapon: p1.weapon, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: 0, megaShot: false, phasing: false, avatar: myAvatar, rematchRequested: false },
+                            p2: { x: 1000, y: 250, vx: 0, vy: 0, hp: 100, weapon: p2.weapon, fireTs: p2.fireTs, aimAngle: p2.aimAngle, shieldEndTime: 0, megaShot: false, phasing: false, avatar: loadoutData.p2.avatar, rematchRequested: false }
+                        }).catch(e=>console.error(e));
+                    }
+                }
             }
-            // Keep physics moving minimally
-            p1.vx *= 0.95; p2.vx *= 0.95;
-            p1.vy += GRAVITY; p1.y += p1.vy; p1.x += p1.vx;
-            p2.vy += GRAVITY; p2.y += p2.vy; p2.x += p2.vx;
+            // Freeze positions dynamically at spawn locations
+            p1.x = 200; p1.y = 250; p1.vx = 0; p1.vy = 0;
+            p2.x = 1000; p2.y = 250; p2.vx = 0; p2.vy = 0;
+            projectiles = [];
             return;
         }
 
-        if (!roundOver && !matchOver) {
-            if (p1.hp <= 0) {
-                processRoundEnd('p2');
-            } else if (p2.hp <= 0) {
-                processRoundEnd('p1');
+        if (roundOver) {
+            p1.vx = 0; p1.vy = 0;
+            p2.x = 1000; p2.y = 250; p2.vx = 0; p2.vy = 0;
+            projectiles = [];
+            return;
+        }
+
+        // Host handles authoritatively calculating round end checks
+        if (isHost || !isOnline) {
+            if (!roundOver && !matchOver && !roundTransition) {
+                if (p1.hp <= 0) {
+                    processRoundEnd('p2');
+                } else if (p2.hp <= 0) {
+                    processRoundEnd('p1');
+                }
             }
         }
 
@@ -2383,6 +2446,7 @@
         isOnline = true;
         window.myLobbyReady = false;
         isBotGame = false;
+        lastSyncedRoundIndex = -1;
         
         showScreen('waitingScreen');
         document.getElementById('lobbyCodeDisplay').innerText = lobbyCode;
@@ -2396,6 +2460,9 @@
                 p1RoundWins: 0,
                 p2RoundWins: 0,
                 matchOver: false,
+                roundTransition: false,
+                roundOver: false,
+                roundIndex: 0,
                 p1: { name: pName, readyLobby: false, mapVote: 'Classic', avatar: myAvatar, rematchRequested: false }
             });
             
@@ -2478,7 +2545,7 @@
                         let finalMap = Math.random() < 0.5 ? p1Vote : p2Vote;
                         if (p1Vote === p2Vote) finalMap = p1Vote;
                         
-                        updateDoc(docRef, { state: 'playing', map: finalMap, p1RoundWins: 0, p2RoundWins: 0, matchOver: false }).catch(e=>console.error(e));
+                        updateDoc(docRef, { state: 'playing', map: finalMap, p1RoundWins: 0, p2RoundWins: 0, matchOver: false, roundTransition: false, roundOver: false, roundIndex: 0 }).catch(e=>console.error(e));
                     }
                 }
 
@@ -2488,6 +2555,8 @@
                     p2RoundWins = 0;
                     matchOver = false;
                     roundTransition = false;
+                    roundOver = false;
+                    roundIndex = 0;
                     enterArenaOnline(data);
                 }
 
@@ -2507,21 +2576,30 @@
                         if (data.p2.phasing !== undefined) p2.phasing = data.p2.phasing;
                         if (data.p2.avatar) loadoutData.p2.avatar = data.p2.avatar;
                     } else if (!isHost && data.p1) {
-                        // Handle client mirroring host score tallies directly
+                        // Mirror authoritative tournament status directly from database
                         if (data.p1RoundWins !== undefined) p1RoundWins = data.p1RoundWins;
                         if (data.p2RoundWins !== undefined) p2RoundWins = data.p2RoundWins;
                         if (data.matchOver !== undefined) matchOver = data.matchOver;
+                        if (data.roundTransition !== undefined) roundTransition = data.roundTransition;
+                        if (data.roundTransitionEndTime !== undefined) roundTransitionEndTime = data.roundTransitionEndTime;
+                        if (data.roundWinnerAlertText !== undefined) roundWinnerAlertText = data.roundWinnerAlertText;
+                        if (data.roundOver !== undefined) roundOver = data.roundOver;
+                        if (data.roundOverTime !== undefined) roundOverTime = data.roundOverTime;
+                        if (data.winnerName !== undefined) winnerName = data.winnerName;
                     }
                 }
 
                 if (data.p1?.rematchRequested && data.p2?.rematchRequested) {
                     if (isHost) {
-                        // Host handles rebooting matchmaking document state back to loadout selection
+                        // Host triggers a reload back to loadouts
                         updateDoc(docRef, {
                             state: 'loadout',
                             p1RoundWins: 0,
                             p2RoundWins: 0,
                             matchOver: false,
+                            roundTransition: false,
+                            roundOver: false,
+                            roundIndex: 0,
                             'p1.ready': false,
                             'p2.ready': false,
                             'p1.rematchRequested': false,
@@ -2559,6 +2637,7 @@
         lobbyCode = code;
         window.myLobbyReady = false;
         isBotGame = false;
+        lastSyncedRoundIndex = -1;
         
         let pName = document.getElementById('playerNameInput').value.trim() || "Player 2";
 
@@ -2643,6 +2722,8 @@
                         p2RoundWins = 0;
                         matchOver = false;
                         roundTransition = false;
+                        roundOver = false;
+                        roundIndex = 0;
                         enterArenaOnline(data);
                     }
 
@@ -2661,11 +2742,23 @@
                             if (data.p1.megaShot !== undefined) p1.megaShot = data.p1.megaShot;
                             if (data.p1.phasing !== undefined) p1.phasing = data.p1.phasing;
                             if (data.p1.avatar) loadoutData.p1.avatar = data.p1.avatar;
-                        } else if (isHost && data.p2) {
-                            // Host handles process round end checks directly
+
+                            // Authoritative multi-round state mapping
                             if (data.p1RoundWins !== undefined) p1RoundWins = data.p1RoundWins;
                             if (data.p2RoundWins !== undefined) p2RoundWins = data.p2RoundWins;
                             if (data.matchOver !== undefined) matchOver = data.matchOver;
+                            if (data.roundTransition !== undefined) roundTransition = data.roundTransition;
+                            if (data.roundTransitionEndTime !== undefined) roundTransitionEndTime = data.roundTransitionEndTime;
+                            if (data.roundWinnerAlertText !== undefined) roundWinnerAlertText = data.roundWinnerAlertText;
+                            if (data.roundOver !== undefined) roundOver = data.roundOver;
+                            if (data.roundOverTime !== undefined) roundOverTime = data.roundOverTime;
+                            if (data.winnerName !== undefined) winnerName = data.winnerName;
+
+                            // Coordinate Reset Sync with round indices
+                            if (data.roundIndex !== undefined && data.roundIndex !== lastSyncedRoundIndex) {
+                                lastSyncedRoundIndex = data.roundIndex;
+                                triggerNextRound();
+                            }
                         }
                     }
 
@@ -2708,6 +2801,8 @@
         p2RoundWins = 0;
         matchOver = false;
         roundTransition = false;
+        roundIndex = 0;
+        lastSyncedRoundIndex = 0;
 
         projectiles = [];
         state = 'arena';
@@ -2722,12 +2817,19 @@
         const docRef = getLobbyRef(lobbyCode);
         syncInterval = setInterval(() => {
             if (state !== 'arena') return;
-            // Write coordinates and state updates to Firebase database real-time
+            // Sync player coordinates dynamically to prevent rubber-banding
             const payload = isHost ? {
                 p1: { x: p1.x, y: p1.y, vx: p1.vx, vy: p1.vy, weapon: p1.weapon, hp: p1.hp, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: p1.shieldEndTime, megaShot: p1.megaShot, phasing: p1.phasing, avatar: myAvatar, rematchRequested: false },
                 p1RoundWins: p1RoundWins,
                 p2RoundWins: p2RoundWins,
-                matchOver: matchOver
+                matchOver: matchOver,
+                roundTransition: roundTransition,
+                roundTransitionEndTime: roundTransitionEndTime,
+                roundWinnerAlertText: roundWinnerAlertText,
+                roundOver: roundOver,
+                roundOverTime: roundOverTime,
+                winnerName: winnerName,
+                roundIndex: roundIndex
             } : {
                 p2: { x: p2.x, y: p2.y, vx: p2.vx, vy: p2.vy, weapon: p2.weapon, hp: p2.hp, fireTs: p2.fireTs, aimAngle: p2.aimAngle, shieldEndTime: p2.shieldEndTime, megaShot: p2.megaShot, phasing: p2.phasing, avatar: myAvatar, rematchRequested: false }
             };
