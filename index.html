@@ -592,7 +592,7 @@
             currentUser = user;
             
             // Persist profile in Firestore obeying strict path: Rule 1
-            const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile');
+            const profileRef = doc(db, 'users', user.uid);
             const snap = await getDoc(profileRef);
             if (snap.exists()) {
                 myProfile = snap.data();
