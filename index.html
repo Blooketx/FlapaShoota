@@ -385,7 +385,7 @@
         <button onclick="showScreen('menuScreen')">Back to Menu</button>
     </div>
 
-    <!-- AVATAR EDITOR SCREEN WITH INDIVIDUAL HUE CONTROL -->
+    <!-- AVATAR EDITOR SCREEN WITH INDIVIDUAL TINT COLOR CONTROL -->
     <div id="avatarScreen" class="ui-layer" style="width: 480px;">
         <h2>Avatar Customizer</h2>
         <div class="avatar-preview-container">
@@ -393,16 +393,16 @@
         </div>
         <div class="avatar-controls">
             <div class="avatar-row">
-                <span>Body Hue:</span>
-                <input type="range" id="avatarBodyHue" min="0" max="360" value="0" oninput="updateAvatarPreview()" style="width: 60%;">
+                <span>Body Color:</span>
+                <input type="color" id="avatarBodyColor" value="#FFD700" oninput="updateAvatarPreview()" style="width: 60%; height: 32px; border: none; background: transparent; cursor: pointer;">
             </div>
             <div class="avatar-row">
-                <span>Beak Hue:</span>
-                <input type="range" id="avatarBeakHue" min="0" max="360" value="0" oninput="updateAvatarPreview()" style="width: 60%;">
+                <span>Beak Color:</span>
+                <input type="color" id="avatarBeakColor" value="#FF9F43" oninput="updateAvatarPreview()" style="width: 60%; height: 32px; border: none; background: transparent; cursor: pointer;">
             </div>
             <div class="avatar-row">
-                <span>Eyes Hue:</span>
-                <input type="range" id="avatarEyesHue" min="0" max="360" value="0" oninput="updateAvatarPreview()" style="width: 60%;">
+                <span>Eyes Color:</span>
+                <input type="color" id="avatarEyesColor" value="#FFFFFF" oninput="updateAvatarPreview()" style="width: 60%; height: 32px; border: none; background: transparent; cursor: pointer;">
             </div>
             <div class="avatar-row">
                 <span>Hat Style:</span>
@@ -553,7 +553,7 @@
     import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
-    function createRobustImage(src) {
+    function createRobustImage(src, fallbackSrc) {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.src = src;
@@ -561,8 +561,10 @@
             if (state === 'avatar' || state === 'menu') updateAvatarPreview();
         };
         img.onerror = () => {
-            if (img.crossOrigin === "anonymous") {
-                console.warn("CORS fetch failed, falling back to standard loader for: " + src);
+            if (fallbackSrc && img.src !== fallbackSrc) {
+                console.warn("Local/GitHub asset failed, loading fallback for: " + src);
+                img.src = fallbackSrc;
+            } else if (img.crossOrigin === "anonymous") {
                 img.removeAttribute("crossOrigin");
                 img.src = src;
             }
@@ -570,10 +572,84 @@
         return img;
     }
 
-    // LOAD CUSTOM BIRD ASSETS
-    const imgBirdBody = createRobustImage("https://media.discordapp.net/attachments/1284984646043439135/1521442063898382427/Untitled111_20260630060055.png?ex=6a44d8d7&is=6a438757&hm=15345c5be9c445ea5e031d7c3b69d917f08154bc231e8ff5c6e7261bc3beabf5&=&format=webp&quality=lossless");
-    const imgBirdBeak = createRobustImage("https://media.discordapp.net/attachments/1284984646043439135/1521442064250835075/Untitled111_20260630060042.png?ex=6a44d8d7&is=6a438757&hm=d85109803d3a1b60242350ff5ba03648aa2160dd55432c309a8ecc03c4eb3686&=&format=webp&quality=lossless");
-    const imgBirdEyes = createRobustImage("https://media.discordapp.net/attachments/1284984646043439135/1521442056533446686/Untitled111_20260630060248.png?ex=6a44d8d5&is=6a438755&hm=9c36aef006ae43559d62ef39dc4f55fe98aa6066864597313fcc5343aa226f39&=&format=webp&quality=lossless");
+    // LOAD CUSTOM BIRD ASSETS (Looks for local GitHub project files first, with secure cloud fallbacks)
+    const imgBirdBody = createRobustImage("Body.png", "https://media.discordapp.net/attachments/1284984646043439135/1521442063898382427/Untitled111_20260630060055.png?ex=6a44d8d7&is=6a438757&hm=15345c5be9c445ea5e031d7c3b69d917f08154bc231e8ff5c6e7261bc3beabf5&=&format=webp&quality=lossless");
+    const imgBirdBeak = createRobustImage("Beak.png", "https://media.discordapp.net/attachments/1284984646043439135/1521442064250835075/Untitled111_20260630060042.png?ex=6a44d8d7&is=6a438757&hm=d85109803d3a1b60242350ff5ba03648aa2160dd55432c309a8ecc03c4eb3686&=&format=webp&quality=lossless");
+    const imgBirdEyes = createRobustImage("Eyes.png", "https://media.discordapp.net/attachments/1284984646043439135/1521442056533446686/Untitled111_20260630060248.png?ex=6a44d8d5&is=6a438755&hm=9c36aef006ae43559d62ef39dc4f55fe98aa6066864597313fcc5343aa226f39&=&format=webp&quality=lossless");
+
+    // WEB AUDIO API LIGHTWEIGHT ARCADE FX SYNTHESIZER
+    class SoundSynthesizer {
+        constructor() {
+            this.ctx = null;
+            this.muted = false;
+        }
+        init() {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        playShoot() {
+            if (this.muted) return;
+            this.init();
+            let osc = this.ctx.createOscillator();
+            let gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(800, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.15);
+        }
+        playJump() {
+            if (this.muted) return;
+            this.init();
+            let osc = this.ctx.createOscillator();
+            let gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(250, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(450, this.ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.1);
+        }
+        playHit() {
+            if (this.muted) return;
+            this.init();
+            let osc = this.ctx.createOscillator();
+            let gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.type = "square";
+            osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+            osc.frequency.setValueAtTime(60, this.ctx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.15);
+        }
+        playHeal() {
+            if (this.muted) return;
+            this.init();
+            let osc = this.ctx.createOscillator();
+            let gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.2);
+        }
+    }
+    const sfx = new SoundSynthesizer();
 
     const firebaseConfig = {
         apiKey: "AIzaSyAx5rX_hLYVn7YkISuS1U2XKJXEbhry-Yo",
@@ -730,15 +806,18 @@
     // Leaderboard Tabs State
     let currentLeaderboardTab = 'daily';
 
-    // Avatar Editor state configuration with multi-hue support
+    // Avatar Editor state configuration with full HEX colors
     let myAvatar = {
-        bodyHue: 0,
-        beakHue: 0,
-        eyesHue: 0,
+        bodyColor: '#FFD700',
+        beakColor: '#FF9F43',
+        eyesColor: '#FFFFFF',
         hat: 'crown',
         glasses: 'none',
         tail: 'classic'
     };
+
+    // Photon Particle systems (Flares generated when bird moves)
+    let photonParticles = [];
 
     window.startGame = startGame;
     window.startLocalLoadout = startLocalLoadout;
@@ -815,7 +894,7 @@
         ["Jump Rope", "🪢"], ["Hula Hoop", "⭕"], ["Beach Ball", "🏖️"], ["Water Balloon", "🎈"], ["Bubble Machine", "🫧"],
         ["Left Shoe", "👞"], ["Math Homework", "📝"], ["Confused Pigeon", "🐦"], ["Microwave Burrito", "🌯"],
         ["Uncooked Pasta", "🍝"], ["A Single Bean", "𫛘"], ["Existential Dread (Toy)", "👻"], ["Spicy Meatball", "🧆"],
-        ["Used Tissue", "🤧"], ["Empty Toilet Paper Roll", "🧻"], ["Rusty Spoon", "🥄"], ["Lukewarm Soup", "🍲"],
+        ["Used Tissue", "🤧"], ["Empty Toilet Paper Roll", "𫛘"], ["Rusty Spoon", "🥄"], ["Lukewarm Soup", "🍲"],
         ["Lint Roller", "🖌️"], ["Fly Swatter", "🪰"], ["Plastic Flamingo", "🦩"], ["Garden Gnome", "🎅"],
         ["Traffic Cone", "⚠️"], ["Bouncy Ball", "⚽"], ["Rubber Duck", "🦆"], ["Toy Train", "🚂"], ["Slightly Damp Sponge", "🧽"]
     ];
@@ -1091,12 +1170,49 @@
         selectMap(randMap);
     }
 
+    // TINT ENGINE UTILIZING OFF-SCREEN CANVAS BLENDING FOR FULL CUSTOM HEX COLORING
+    const tintCacheMap = new Map();
+    function renderTintedImage(img, color) {
+        if (!img.complete || img.naturalWidth === 0) return null;
+        
+        const key = `${img.src}_${color}`;
+        if (tintCacheMap.has(key)) {
+            return tintCacheMap.get(key);
+        }
+
+        const tintCanvas = document.createElement('canvas');
+        tintCanvas.width = img.naturalWidth;
+        tintCanvas.height = img.naturalHeight;
+        const tintCtx = tintCanvas.getContext('2d');
+
+        // Draw original
+        tintCtx.drawImage(img, 0, 0);
+
+        // Overlay with target color maintaining alpha mapping
+        tintCtx.globalCompositeOperation = 'source-atop';
+        tintCtx.fillStyle = color;
+        tintCtx.fillRect(0, 0, tintCanvas.width, tintCanvas.height);
+
+        // Blend with original using multiply to preserve highlights and black lines
+        tintCtx.globalCompositeOperation = 'multiply';
+        tintCtx.drawImage(img, 0, 0);
+
+        // Put clean outlines back on top
+        tintCtx.globalCompositeOperation = 'destination-atop';
+        tintCtx.drawImage(img, 0, 0);
+
+        tintCacheMap.set(key, tintCanvas);
+        return tintCanvas;
+    }
+
     function drawBirdToCtx(avatarCtx, cx, cy, size, settings, vy = 0, direction = 1) {
         avatarCtx.save();
         avatarCtx.translate(cx, cy);
         avatarCtx.scale(direction, 1);
         
-        let bodyColor = `hsl(${settings.bodyHue ?? 0}, 85%, 55%)`;
+        let bodyColor = settings.bodyColor || '#FFD700';
+        let beakColor = settings.beakColor || '#FF9F43';
+        let eyesColor = settings.eyesColor || '#FFFFFF';
 
         // Draw custom tail pattern behind body
         avatarCtx.fillStyle = bodyColor;
@@ -1133,11 +1249,10 @@
 
         let imgSize = size * 2.8;
 
-        // 1. Draw custom bird body with its specific Hue rotation
-        avatarCtx.save();
-        if (imgBirdBody.complete && imgBirdBody.naturalWidth > 0) {
-            avatarCtx.filter = `hue-rotate(${settings.bodyHue ?? 0}deg) saturate(1.2)`;
-            avatarCtx.drawImage(imgBirdBody, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        // 1. Draw custom bird body with fully custom solid color mapping
+        const bodyCanvas = renderTintedImage(imgBirdBody, bodyColor);
+        if (bodyCanvas) {
+            avatarCtx.drawImage(bodyCanvas, -imgSize/2, -imgSize/2, imgSize, imgSize);
         } else {
             let gradient = avatarCtx.createRadialGradient(-size*0.2, -size*0.2, size*0.1, 0, 0, size);
             gradient.addColorStop(0, bodyColor);
@@ -1150,15 +1265,13 @@
             avatarCtx.fill();
             avatarCtx.stroke();
         }
-        avatarCtx.restore();
 
-        // 2. Draw custom bird eyes with its specific Hue rotation
-        avatarCtx.save();
-        if (imgBirdEyes.complete && imgBirdEyes.naturalWidth > 0) {
-            avatarCtx.filter = `hue-rotate(${settings.eyesHue ?? 0}deg) saturate(1.2)`;
-            avatarCtx.drawImage(imgBirdEyes, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        // 2. Draw custom bird eyes tinted perfectly
+        const eyesCanvas = renderTintedImage(imgBirdEyes, eyesColor);
+        if (eyesCanvas) {
+            avatarCtx.drawImage(eyesCanvas, -imgSize/2, -imgSize/2, imgSize, imgSize);
         } else {
-            avatarCtx.fillStyle = '#fff';
+            avatarCtx.fillStyle = eyesColor;
             avatarCtx.beginPath();
             avatarCtx.arc(size * 0.4, -size * 0.3, size * 0.35, 0, Math.PI * 2);
             avatarCtx.fill();
@@ -1168,7 +1281,6 @@
             avatarCtx.arc(size * 0.5, -size * 0.3, size * 0.15, 0, Math.PI * 2);
             avatarCtx.fill();
         }
-        avatarCtx.restore();
 
         // Draw glasses styles on top of eyes
         if (settings.glasses === 'shades') {
@@ -1211,13 +1323,12 @@
             avatarCtx.fill();
         }
 
-        // 3. Draw custom bird beak with its specific Hue rotation
-        avatarCtx.save();
-        if (imgBirdBeak.complete && imgBirdBeak.naturalWidth > 0) {
-            avatarCtx.filter = `hue-rotate(${settings.beakHue ?? 0}deg) saturate(1.2)`;
-            avatarCtx.drawImage(imgBirdBeak, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        // 3. Draw custom bird beak tinted perfectly
+        const beakCanvas = renderTintedImage(imgBirdBeak, beakColor);
+        if (beakCanvas) {
+            avatarCtx.drawImage(beakCanvas, -imgSize/2, -imgSize/2, imgSize, imgSize);
         } else {
-            avatarCtx.fillStyle = '#ff9f43';
+            avatarCtx.fillStyle = beakColor;
             avatarCtx.beginPath();
             avatarCtx.moveTo(size * 0.7, -size * 0.1);
             avatarCtx.lineTo(size * 1.5, size * 0.15);
@@ -1226,7 +1337,6 @@
             avatarCtx.fill();
             avatarCtx.stroke();
         }
-        avatarCtx.restore();
 
         // Draw hats/accessories
         if (settings.hat === 'crown') {
@@ -1315,9 +1425,9 @@
         const pCanvas = document.getElementById('avatarCanvas');
         const pCtx = pCanvas.getContext('2d');
         
-        myAvatar.bodyHue = parseInt(document.getElementById('avatarBodyHue').value);
-        myAvatar.beakHue = parseInt(document.getElementById('avatarBeakHue').value);
-        myAvatar.eyesHue = parseInt(document.getElementById('avatarEyesHue').value);
+        myAvatar.bodyColor = document.getElementById('avatarBodyColor').value;
+        myAvatar.beakColor = document.getElementById('avatarBeakColor').value;
+        myAvatar.eyesColor = document.getElementById('avatarEyesColor').value;
         
         myAvatar.hat = document.getElementById('avatarHat').value;
         myAvatar.glasses = document.getElementById('avatarGlasses').value;
@@ -1337,9 +1447,9 @@
         
         if (!activeAvatar) {
             activeAvatar = {
-                bodyHue: (owner === 'p1') ? 0 : 310,
-                beakHue: (owner === 'p1') ? 0 : 90,
-                eyesHue: (owner === 'p1') ? 0 : 200,
+                bodyColor: (owner === 'p1') ? '#FFD700' : '#e74c3c',
+                beakColor: '#FF9F43',
+                eyesColor: '#FFFFFF',
                 hat: (owner === 'p1') ? 'crown' : 'none',
                 glasses: 'none',
                 tail: 'classic'
@@ -1564,9 +1674,9 @@
         };
         
         loadoutData.p2.avatar = {
-            bodyHue: Math.floor(Math.random() * 360),
-            beakHue: Math.floor(Math.random() * 360),
-            eyesHue: Math.floor(Math.random() * 360),
+            bodyColor: '#e74c3c',
+            beakColor: '#FF9F43',
+            eyesColor: '#00FFFF',
             hat: ['crown', 'pirate', 'headphones', 'ninja', 'tophat'][Math.floor(Math.random() * 5)],
             glasses: ['shades', 'monocle', 'eyepatch', 'blush', 'none'][Math.floor(Math.random() * 5)],
             tail: ['classic', 'fancy', 'feathered'][Math.floor(Math.random() * 3)]
@@ -1640,7 +1750,7 @@
         nameField.value = defaultNames[Math.floor(Math.random() * defaultNames.length)];
         
         loadoutData.p1.avatar = { ...myAvatar };
-        loadoutData.p2.avatar = { bodyHue: 310, beakHue: 90, eyesHue: 200, hat: 'tophat', glasses: 'shades', tail: 'classic' };
+        loadoutData.p2.avatar = { bodyColor: '#FF5E5E', beakColor: '#FFB830', eyesColor: '#8E44AD', hat: 'tophat', glasses: 'shades', tail: 'classic' };
         updateAvatarPreview();
     };
 
@@ -1731,6 +1841,9 @@
         bird.vy += GRAVITY;
         bird.y += bird.vy;
 
+        // Emit beautiful moving trail particles (Photons)
+        emitPhoton(bird.x, bird.y, -2, bird.vy * 0.2, '#FFD700');
+
         if (frameCount % 90 === 0) {
             let topHeight = Math.random() * (canvas.height - pipeGap - 100) + 50;
             pipes.push({ x: canvas.width, top: topHeight, passed: false });
@@ -1770,6 +1883,10 @@
 
     function drawFlappy() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Render trail particles underneath everything
+        drawPhotons();
+
         drawDetailedBird(bird.x, bird.y, bird.size, '#FFD700', bird.vy, 1, 'p1');
 
         ctx.fillStyle = '#21003b';
@@ -1781,6 +1898,45 @@
             ctx.strokeRect(p.x, 0, pipeWidth, p.top);
             ctx.strokeRect(p.x, p.top + pipeGap, pipeWidth, canvas.height - p.top - pipeGap);
         });
+    }
+
+    // PHOTON MOVEMENT PARTICLE GENERATOR
+    function emitPhoton(x, y, vx, vy, color) {
+        if (Math.random() < 0.45) {
+            photonParticles.push({
+                x: x,
+                y: y,
+                vx: vx + (Math.random() - 0.5) * 1.5,
+                vy: vy + (Math.random() - 0.5) * 1.5,
+                size: Math.random() * 5 + 2.5,
+                color: color || '#FFD700',
+                alpha: 1,
+                life: 35 + Math.random() * 15
+            });
+        }
+    }
+
+    function drawPhotons() {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = photonParticles.length - 1; i >= 0; i--) {
+            let p = photonParticles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life--;
+            p.alpha = Math.max(0, p.life / 50);
+
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.alpha;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (p.life <= 0) {
+                photonParticles.splice(i, 1);
+            }
+        }
+        ctx.restore();
     }
 
     function startLocalLoadout() {
@@ -1862,12 +2018,22 @@
             p.vx = Math.cos(p.aimAngle) * 20;
             p.vy = Math.sin(p.aimAngle) * 20;
             p.nextAbilityTime = Date.now() + 3000;
+            // Flare brilliant photon particles
+            for (let i = 0; i < 15; i++) {
+                emitPhoton(p.x, p.y, -p.vx * 0.5, -p.vy * 0.5, '#FFF59D');
+            }
         } else if (ability === 'Heal') {
             p.hp = Math.min(100, p.hp + 30);
             p.nextAbilityTime = Date.now() + 8000;
+            for (let i = 0; i < 12; i++) {
+                emitPhoton(p.x, p.y, (Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5, '#2ecc71');
+            }
         } else if (ability === 'Shield') {
             p.shieldEndTime = Date.now() + 2500;
             p.nextAbilityTime = Date.now() + 10000;
+            for (let i = 0; i < 12; i++) {
+                emitPhoton(p.x, p.y, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, '#00FFFF');
+            }
         } else if (ability === 'Burst') {
             for (let i = -2; i <= 2; i++) {
                 fireWeapon(owner, false, i * 0.15); 
@@ -2107,6 +2273,14 @@
             }
         }
 
+        // EMIT PHOTON EMISSIONS IN RESPONSE TO MOVEMENT PHYSICS
+        if (Math.abs(p1.vx) > 0.5 || Math.abs(p1.vy) > 0.5) {
+            emitPhoton(p1.x, p1.y, -p1.vx * 0.3, -p1.vy * 0.3, loadoutData.p1.avatar?.bodyColor || '#FFD700');
+        }
+        if (Math.abs(p2.vx) > 0.5 || Math.abs(p2.vy) > 0.5) {
+            emitPhoton(p2.x, p2.y, -p2.vx * 0.3, -p2.vy * 0.3, loadoutData.p2.avatar?.bodyColor || '#FF5E5E');
+        }
+
         if (isBotGame) {
             if (roundOver) {
                 p1.vx *= 0.95;
@@ -2172,8 +2346,12 @@
                 me.aimAngle = Math.atan2(mouseY - me.y, mouseX - me.x);
 
                 if (other.targetX !== undefined && other.targetY !== undefined) {
-                    other.x += (other.targetX - other.x) * 0.35;
-                    other.y += (other.targetY - other.y) * 0.35;
+                    // Project location ahead using other player's predicted velocity vector (dead reckoning)
+                    other.targetX += (other.vx || 0);
+                    other.targetY += (other.vy || 0);
+                    
+                    other.x += (other.targetX - other.x) * 0.18;
+                    other.y += (other.targetY - other.y) * 0.18;
                 } else {
                     other.x += other.vx;
                     other.y += other.vy;
@@ -2206,6 +2384,11 @@
                         p.x = pipe.destX;
                         p.y = pipe.destY;
                         p.vy = 0;
+                        // Burst teleport photons!
+                        for (let k = 0; k < 12; k++) {
+                            emitPhoton(pipe.x + pipe.w/2, pipe.y + pipe.h/2, (Math.random()-0.5)*5, (Math.random()-0.5)*5, '#2ecc71');
+                            emitPhoton(pipe.destX, pipe.destY, (Math.random()-0.5)*5, (Math.random()-0.5)*5, '#2ecc71');
+                        }
                     }
                 });
             }
@@ -2217,6 +2400,11 @@
             proj.y += proj.vy;
             proj.life--;
 
+            // Make weapon projectiles leave small color matching photon sparks!
+            if (Math.random() < 0.2) {
+                emitPhoton(proj.x, proj.y, -proj.vx * 0.1, -proj.vy * 0.1, proj.color);
+            }
+
             let hitObstacle = false;
             if(mapData && mapData.obs) {
                 mapData.obs.forEach(obs => {
@@ -2226,6 +2414,10 @@
                 });
             }
             if (hitObstacle) {
+                // Spark splash effects
+                for (let k = 0; k < 4; k++) {
+                    emitPhoton(proj.x, proj.y, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, proj.color);
+                }
                 projectiles.splice(i, 1);
                 continue;
             }
@@ -2238,6 +2430,10 @@
             if (distance < proj.size + target.size) {
                 if (Date.now() > target.shieldEndTime) {
                     target.hp -= proj.dmg;
+                    sfx.playHit();
+                }
+                for (let k = 0; k < 8; k++) {
+                    emitPhoton(proj.x, proj.y, (Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6, proj.color);
                 }
                 projectiles.splice(i, 1);
                 updateHUD();
@@ -2250,6 +2446,9 @@
     function drawArena() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
+        // Draw photon trails/sparks
+        drawPhotons();
+
         let mapData = MAPS[selectedMapName];
         
         if(mapData && mapData.obs) {
@@ -2284,11 +2483,15 @@
 
         [p1, p2].forEach((p, idx) => {
             if (Date.now() < p.shieldEndTime) {
+                ctx.save();
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size + 10, 0, Math.PI*2);
                 ctx.strokeStyle = '#00ffff';
                 ctx.lineWidth = 4;
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 15;
                 ctx.stroke();
+                ctx.restore();
             } else if (p.megaShot) {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size + 5, 0, Math.PI*2);
@@ -2404,6 +2607,8 @@
             vy: Math.sin(angle) * speed, 
             life: life, size: size, dmg: dmg, color: color, owner: owner, emoji: emoji
         });
+
+        sfx.playShoot();
 
         if (isOnline && !fromNetwork) {
             if (owner === 'p1' && isHost) p1.fireTs = Date.now();
@@ -2814,27 +3019,50 @@
         winnerName = "";
         document.getElementById('deathWinnerDisplay').innerText = "";
 
+        let dbWriteFails = 0;
+        let currentSyncIntervalTime = 250; // default 250ms interval (4 writes/sec) to drastically reduce quota usage
         const docRef = getLobbyRef(lobbyCode);
-        syncInterval = setInterval(() => {
-            if (state !== 'arena') return;
-            // Sync player coordinates dynamically to prevent rubber-banding
-            const payload = isHost ? {
-                p1: { x: p1.x, y: p1.y, vx: p1.vx, vy: p1.vy, weapon: p1.weapon, hp: p1.hp, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: p1.shieldEndTime, megaShot: p1.megaShot, phasing: p1.phasing, avatar: myAvatar, rematchRequested: false },
-                p1RoundWins: p1RoundWins,
-                p2RoundWins: p2RoundWins,
-                matchOver: matchOver,
-                roundTransition: roundTransition,
-                roundTransitionEndTime: roundTransitionEndTime,
-                roundWinnerAlertText: roundWinnerAlertText,
-                roundOver: roundOver,
-                roundOverTime: roundOverTime,
-                winnerName: winnerName,
-                roundIndex: roundIndex
-            } : {
-                p2: { x: p2.x, y: p2.y, vx: p2.vx, vy: p2.vy, weapon: p2.weapon, hp: p2.hp, fireTs: p2.fireTs, aimAngle: p2.aimAngle, shieldEndTime: p2.shieldEndTime, megaShot: p2.megaShot, phasing: p2.phasing, avatar: myAvatar, rematchRequested: false }
-            };
-            updateDoc(docRef, payload).catch(e => console.error(e));
-        }, 50);
+
+        function startSyncLoop(intervalTime) {
+            if (syncInterval) clearInterval(syncInterval);
+            syncInterval = setInterval(() => {
+                if (state !== 'arena') return;
+                
+                // Compile player coordinates to sync
+                const payload = isHost ? {
+                    p1: { x: p1.x, y: p1.y, vx: p1.vx, vy: p1.vy, weapon: p1.weapon, hp: p1.hp, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: p1.shieldEndTime, megaShot: p1.megaShot, phasing: p1.phasing, avatar: myAvatar, rematchRequested: false },
+                    p1RoundWins: p1RoundWins,
+                    p2RoundWins: p2RoundWins,
+                    matchOver: matchOver,
+                    roundTransition: roundTransition,
+                    roundTransitionEndTime: roundTransitionEndTime,
+                    roundWinnerAlertText: roundWinnerAlertText,
+                    roundOver: roundOver,
+                    roundOverTime: roundOverTime,
+                    winnerName: winnerName,
+                    roundIndex: roundIndex
+                } : {
+                    p2: { x: p2.x, y: p2.y, vx: p2.vx, vy: p2.vy, weapon: p2.weapon, hp: p2.hp, fireTs: p2.fireTs, aimAngle: p2.aimAngle, shieldEndTime: p2.shieldEndTime, megaShot: p2.megaShot, phasing: p2.phasing, avatar: myAvatar, rematchRequested: false }
+                };
+
+                updateDoc(docRef, payload).catch(e => {
+                    console.warn("Firestore sync update warning: ", e);
+                    if (e.code === 'resource-exhausted' || e.message?.includes('Quota exceeded') || e.message?.includes('quota')) {
+                        dbWriteFails++;
+                        if (dbWriteFails === 1) {
+                            showToast("Firestore Quota Exceeded! Adapting lag prediction & slowing sync...");
+                        }
+                        // Step-down database update interval incrementally to prevent further locks
+                        if (currentSyncIntervalTime < 2000) {
+                            currentSyncIntervalTime += 500;
+                            startSyncLoop(currentSyncIntervalTime);
+                        }
+                    }
+                });
+            }, intervalTime);
+        }
+
+        startSyncLoop(currentSyncIntervalTime);
     }
 
     function cancelLobby() {
@@ -2861,24 +3089,25 @@
 
         if (state === 'flappy' && (e.code === 'Space' || e.code === kb.p1.jump)) {
             bird.vy = JUMP_FORCE;
+            sfx.playJump();
         }
 
         if (state === 'arena') {
             if (roundOver || roundTransition) return;
             if (isBotGame) {
-                if (e.code === 'Space' || e.code === kb.p1.jump) p1.vy = JUMP_FORCE;
+                if (e.code === 'Space' || e.code === kb.p1.jump) { p1.vy = JUMP_FORCE; sfx.playJump(); }
                 if (e.code === kb.p1.special) useAbility('p1');
             } else if (!isOnline) {
-                if (e.code === 'Space' || e.code === kb.p1.jump) p1.vy = JUMP_FORCE;
+                if (e.code === 'Space' || e.code === kb.p1.jump) { p1.vy = JUMP_FORCE; sfx.playJump(); }
                 if (e.code === kb.p1.special) useAbility('p1');
 
-                if (e.code === kb.p2.jump) p2.vy = JUMP_FORCE;
+                if (e.code === kb.p2.jump) { p2.vy = JUMP_FORCE; sfx.playJump(); }
                 if (e.code === 'Enter' || e.code === 'NumpadEnter') fireWeapon('p2');
                 if (e.code === kb.p2.special) useAbility('p2');
             } else {
                 let meObj = isHost ? p1 : p2;
                 let meRole = isHost ? 'p1' : 'p2';
-                if (e.code === 'Space' || e.code === kb.p1.jump) meObj.vy = JUMP_FORCE;
+                if (e.code === 'Space' || e.code === kb.p1.jump) { meObj.vy = JUMP_FORCE; sfx.playJump(); }
                 if (e.code === kb.p1.special) useAbility(meRole);
             }
         }
@@ -2891,7 +3120,7 @@
     });
 
     window.addEventListener('mousedown', (e) => {
-        if (state === 'flappy') bird.vy = JUMP_FORCE;
+        if (state === 'flappy') { bird.vy = JUMP_FORCE; sfx.playJump(); }
         if (state === 'arena' && e.button === 0) {
             if (roundOver || roundTransition) return;
             if (isBotGame) {
