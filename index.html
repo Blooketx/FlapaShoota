@@ -316,7 +316,7 @@
         <button onclick="cancelMatchmakingQueue()" style="background: #e74c3c; border-color: #c0392b; color: #fff; margin-top: 20px;">Cancel Matchmaking</button>
     </div>
 
-    <!-- AVATAR EDITOR SCREEN -->
+    <!-- AVATAR EDITOR SCREEN WITH INDIVIDUAL HUE CONTROL -->
     <div id="avatarScreen" class="ui-layer" style="width: 480px;">
         <h2>Avatar Customizer</h2>
         <div class="avatar-preview-container">
@@ -325,7 +325,15 @@
         <div class="avatar-controls">
             <div class="avatar-row">
                 <span>Body Hue:</span>
-                <input type="range" id="avatarHue" min="0" max="360" value="45" oninput="updateAvatarPreview()" style="width: 60%;">
+                <input type="range" id="avatarBodyHue" min="0" max="360" value="0" oninput="updateAvatarPreview()" style="width: 60%;">
+            </div>
+            <div class="avatar-row">
+                <span>Beak Hue:</span>
+                <input type="range" id="avatarBeakHue" min="0" max="360" value="0" oninput="updateAvatarPreview()" style="width: 60%;">
+            </div>
+            <div class="avatar-row">
+                <span>Eyes Hue:</span>
+                <input type="range" id="avatarEyesHue" min="0" max="360" value="0" oninput="updateAvatarPreview()" style="width: 60%;">
             </div>
             <div class="avatar-row">
                 <span>Hat Style:</span>
@@ -450,7 +458,7 @@
     <div id="deathScreen" class="ui-layer">
         <h2 style="font-size: 32px; color: var(--gold-primary); text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">Game Over</h2>
         <h3 id="deathWinnerDisplay" style="color: #fff; margin-bottom: 20px; font-size: 24px; font-weight: bold;"></h3>
-        <button onclick="handleRespawn()">Play Again</button>
+        <button id="respawnBtn" onclick="handleRespawn()">Play Again</button>
         <button onclick="backToMenu()">Main Menu</button>
     </div>
 
@@ -468,6 +476,29 @@
     import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
+    function createRobustImage(src) {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = src;
+        img.onload = () => {
+            if (state === 'avatar' || state === 'menu') updateAvatarPreview();
+        };
+        img.onerror = () => {
+            // If CORS load fails, retry without crossOrigin so it still displays perfectly on the canvas
+            if (img.crossOrigin === "anonymous") {
+                console.warn("CORS fetch failed, falling back to standard loader for: " + src);
+                img.removeAttribute("crossOrigin");
+                img.src = src;
+            }
+        };
+        return img;
+    }
+
+    // LOAD CUSTOM BIRD ASSETS
+    const imgBirdBody = createRobustImage("https://media.discordapp.net/attachments/1284984646043439135/1521442063898382427/Untitled111_20260630060055.png?ex=6a44d8d7&is=6a438757&hm=15345c5be9c445ea5e031d7c3b69d917f08154bc231e8ff5c6e7261bc3beabf5&=&format=webp&quality=lossless");
+    const imgBirdBeak = createRobustImage("https://media.discordapp.net/attachments/1284984646043439135/1521442064250835075/Untitled111_20260630060042.png?ex=6a44d8d7&is=6a438757&hm=d85109803d3a1b60242350ff5ba03648aa2160dd55432c309a8ecc03c4eb3686&=&format=webp&quality=lossless");
+    const imgBirdEyes = createRobustImage("https://media.discordapp.net/attachments/1284984646043439135/1521442056533446686/Untitled111_20260630060248.png?ex=6a44d8d5&is=6a438755&hm=9c36aef006ae43559d62ef39dc4f55fe98aa6066864597313fcc5343aa226f39&=&format=webp&quality=lossless");
+
     const firebaseConfig = {
         apiKey: "AIzaSyAx5rX_hLYVn7YkISuS1U2XKJXEbhry-Yo",
         authDomain: "ffa-flapa.firebaseapp.com",
@@ -481,7 +512,7 @@
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
-    const auth = getAuth(app); // FIXED: Resolved auth referencing self bug
+    const auth = getAuth(app); 
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'ffa-flapa';
     
     let currentUser = null;
@@ -501,7 +532,6 @@
         }, 3000);
     };
 
-    // Monitor Auth State
     onAuthStateChanged(auth, (user) => {
         currentUser = user;
         updateAuthUI();
@@ -511,7 +541,6 @@
             document.getElementById('widgetName').innerText = "Logged in: " + userDisplayName;
         } else {
             document.getElementById('widgetName').innerText = "Playing as Guest 👤";
-            // Autologin anonymously on load so DB queries remain authorized
             signInAnonymously(auth).catch(e => console.error("Anonymous Sign-In Error: ", e));
         }
     });
@@ -613,15 +642,16 @@
     let unsubscribeMatchmaking = null;
     let isBotGame = false;
 
-    // Avatar Editor state configuration
+    // Avatar Editor state configuration with multi-hue support
     let myAvatar = {
-        hue: 45, // Warm golden yellow default
+        bodyHue: 0,
+        beakHue: 0,
+        eyesHue: 0,
         hat: 'crown',
         glasses: 'none',
         tail: 'classic'
     };
 
-    // Expose control API functions to DOM/window elements
     window.startGame = startGame;
     window.startLocalLoadout = startLocalLoadout;
     window.showScreen = showScreen;
@@ -945,10 +975,10 @@
         avatarCtx.translate(cx, cy);
         avatarCtx.scale(direction, 1);
         
-        let color = `hsl(${settings.hue}, 85%, 55%)`;
+        let bodyColor = `hsl(${settings.bodyHue ?? 0}, 85%, 55%)`;
 
-        // Draw custom tail pattern
-        avatarCtx.fillStyle = color;
+        // Draw custom tail pattern behind body
+        avatarCtx.fillStyle = bodyColor;
         avatarCtx.strokeStyle = '#000';
         avatarCtx.lineWidth = 1.5;
         if (settings.tail === 'classic') {
@@ -980,33 +1010,46 @@
             avatarCtx.stroke();
         }
 
-        // Draw bird main body sphere with dynamic system gradient
-        let gradient = avatarCtx.createRadialGradient(-size*0.2, -size*0.2, size*0.1, 0, 0, size);
-        gradient.addColorStop(0, color);
-        gradient.addColorStop(1, '#1a002c'); 
+        let imgSize = size * 2.8;
 
-        avatarCtx.fillStyle = gradient;
-        avatarCtx.strokeStyle = '#FFD700'; 
-        avatarCtx.lineWidth = 2;
-        avatarCtx.beginPath();
-        avatarCtx.arc(0, 0, size, 0, Math.PI * 2);
-        avatarCtx.fill();
-        avatarCtx.stroke();
+        // 1. Draw custom bird body with its specific Hue rotation (filter nested with save/restore for complete isolation)
+        avatarCtx.save();
+        if (imgBirdBody.complete && imgBirdBody.naturalWidth > 0) {
+            avatarCtx.filter = `hue-rotate(${settings.bodyHue ?? 0}deg) saturate(1.2)`;
+            avatarCtx.drawImage(imgBirdBody, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        } else {
+            let gradient = avatarCtx.createRadialGradient(-size*0.2, -size*0.2, size*0.1, 0, 0, size);
+            gradient.addColorStop(0, bodyColor);
+            gradient.addColorStop(1, '#1a002c'); 
+            avatarCtx.fillStyle = gradient;
+            avatarCtx.strokeStyle = '#FFD700'; 
+            avatarCtx.lineWidth = 2;
+            avatarCtx.beginPath();
+            avatarCtx.arc(0, 0, size, 0, Math.PI * 2);
+            avatarCtx.fill();
+            avatarCtx.stroke();
+        }
+        avatarCtx.restore();
 
-        // Draw normal eyes
-        avatarCtx.fillStyle = '#fff';
-        avatarCtx.beginPath();
-        avatarCtx.arc(size * 0.4, -size * 0.3, size * 0.35, 0, Math.PI * 2);
-        avatarCtx.fill();
-        avatarCtx.stroke();
+        // 2. Draw custom bird eyes with its specific Hue rotation
+        avatarCtx.save();
+        if (imgBirdEyes.complete && imgBirdEyes.naturalWidth > 0) {
+            avatarCtx.filter = `hue-rotate(${settings.eyesHue ?? 0}deg) saturate(1.2)`;
+            avatarCtx.drawImage(imgBirdEyes, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        } else {
+            avatarCtx.fillStyle = '#fff';
+            avatarCtx.beginPath();
+            avatarCtx.arc(size * 0.4, -size * 0.3, size * 0.35, 0, Math.PI * 2);
+            avatarCtx.fill();
+            avatarCtx.stroke();
+            avatarCtx.fillStyle = '#000';
+            avatarCtx.beginPath();
+            avatarCtx.arc(size * 0.5, -size * 0.3, size * 0.15, 0, Math.PI * 2);
+            avatarCtx.fill();
+        }
+        avatarCtx.restore();
 
-        // Eye pupils
-        avatarCtx.fillStyle = '#000';
-        avatarCtx.beginPath();
-        avatarCtx.arc(size * 0.5, -size * 0.3, size * 0.15, 0, Math.PI * 2);
-        avatarCtx.fill();
-
-        // Draw glasses styles
+        // Draw glasses styles on top of eyes
         if (settings.glasses === 'shades') {
             avatarCtx.fillStyle = 'rgba(0, 0, 0, 0.85)';
             avatarCtx.beginPath();
@@ -1047,26 +1090,24 @@
             avatarCtx.fill();
         }
 
-        // Draw golden orange beak
-        avatarCtx.fillStyle = '#ff9f43';
-        avatarCtx.beginPath();
-        avatarCtx.moveTo(size * 0.7, -size * 0.1);
-        avatarCtx.lineTo(size * 1.5, size * 0.15);
-        avatarCtx.lineTo(size * 0.7, size * 0.4);
-        avatarCtx.closePath();
-        avatarCtx.fill();
-        avatarCtx.stroke();
-
-        avatarCtx.fillStyle = color;
-        let wingWave = Math.sin(Date.now() * 0.012) * (vy < 0 ? 1.1 : 0.35);
+        // 3. Draw custom bird beak with its specific Hue rotation
         avatarCtx.save();
-        avatarCtx.translate(-size * 0.2, size * 0.1);
-        avatarCtx.scale(1, wingWave);
-        avatarCtx.beginPath();
-        avatarCtx.ellipse(0, 0, size * 0.6, size * 0.3, 0, 0, Math.PI * 2);
-        avatarCtx.fill();
-        avatarCtx.stroke();
+        if (imgBirdBeak.complete && imgBirdBeak.naturalWidth > 0) {
+            avatarCtx.filter = `hue-rotate(${settings.beakHue ?? 0}deg) saturate(1.2)`;
+            avatarCtx.drawImage(imgBirdBeak, -imgSize/2, -imgSize/2, imgSize, imgSize);
+        } else {
+            avatarCtx.fillStyle = '#ff9f43';
+            avatarCtx.beginPath();
+            avatarCtx.moveTo(size * 0.7, -size * 0.1);
+            avatarCtx.lineTo(size * 1.5, size * 0.15);
+            avatarCtx.lineTo(size * 0.7, size * 0.4);
+            avatarCtx.closePath();
+            avatarCtx.fill();
+            avatarCtx.stroke();
+        }
         avatarCtx.restore();
+
+        // Note: Vector wings animation is completely removed from rendering as requested.
 
         // Draw hats/accessories
         if (settings.hat === 'crown') {
@@ -1155,7 +1196,10 @@
         const pCanvas = document.getElementById('avatarCanvas');
         const pCtx = pCanvas.getContext('2d');
         
-        myAvatar.hue = parseInt(document.getElementById('avatarHue').value);
+        myAvatar.bodyHue = parseInt(document.getElementById('avatarBodyHue').value);
+        myAvatar.beakHue = parseInt(document.getElementById('avatarBeakHue').value);
+        myAvatar.eyesHue = parseInt(document.getElementById('avatarEyesHue').value);
+        
         myAvatar.hat = document.getElementById('avatarHat').value;
         myAvatar.glasses = document.getElementById('avatarGlasses').value;
         myAvatar.tail = document.getElementById('avatarTail').value;
@@ -1174,8 +1218,10 @@
         
         if (!activeAvatar) {
             activeAvatar = {
-                hue: (owner === 'p1') ? 45 : 355,
-                hat: 'none',
+                bodyHue: (owner === 'p1') ? 0 : 310,
+                beakHue: (owner === 'p1') ? 0 : 90,
+                eyesHue: (owner === 'p1') ? 0 : 200,
+                hat: (owner === 'p1') ? 'crown' : 'none',
                 glasses: 'none',
                 tail: 'classic'
             };
@@ -1283,7 +1329,9 @@
         };
         
         loadoutData.p2.avatar = {
-            hue: Math.floor(Math.random() * 360),
+            bodyHue: Math.floor(Math.random() * 360),
+            beakHue: Math.floor(Math.random() * 360),
+            eyesHue: Math.floor(Math.random() * 360),
             hat: ['crown', 'pirate', 'headphones', 'ninja', 'tophat'][Math.floor(Math.random() * 5)],
             glasses: ['shades', 'monocle', 'eyepatch', 'blush', 'none'][Math.floor(Math.random() * 5)],
             tail: ['classic', 'fancy', 'feathered'][Math.floor(Math.random() * 3)]
@@ -1351,7 +1399,7 @@
         nameField.value = defaultNames[Math.floor(Math.random() * defaultNames.length)];
         
         loadoutData.p1.avatar = { ...myAvatar };
-        loadoutData.p2.avatar = { hue: 355, hat: 'tophat', glasses: 'shades', tail: 'classic' };
+        loadoutData.p2.avatar = { bodyHue: 310, beakHue: 90, eyesHue: 200, hat: 'tophat', glasses: 'shades', tail: 'classic' };
         updateAvatarPreview();
     };
 
@@ -1382,7 +1430,19 @@
             if (isBotGame) {
                 triggerBotMatchmakingFallback();
             } else if (isOnline) {
-                updateDoc(getLobbyRef(lobbyCode), { state: 'loadout' }).catch(e=>console.error(e));
+                window.myLobbyReady = false;
+                document.getElementById('btnLobbyReady').innerText = "Ready Up!";
+                document.getElementById('btnLobbyReady').style.backgroundColor = "var(--btn-bg)";
+                document.getElementById('btnLobbyReady').style.color = "var(--btn-text)";
+                
+                window.startingLoadout = false;
+                window.startingArena = false;
+                
+                updateDoc(getLobbyRef(lobbyCode), { 
+                    state: 'lobby',
+                    'p1.readyLobby': false,
+                    'p2.readyLobby': false
+                }).catch(e=>console.error(e));
             } else {
                 startLocalLoadout();
             }
@@ -1406,7 +1466,7 @@
     let bird = { x: 150, y: 300, vy: 0, size: 20 };
     let pipes = [];
     let pipeWidth = 60;
-    let pipeGap = 150;
+    let pipeGap = 165; 
     let frameCount = 0;
 
     function startGame() {
@@ -1419,6 +1479,10 @@
         pipes = [];
         score = 0;
         frameCount = 0;
+        
+        let btn = document.getElementById('respawnBtn');
+        if(btn) btn.innerText = "Play Again";
+
         showScreen(null);
         updateHUD();
     }
@@ -1670,6 +1734,15 @@
                 winnerName = isBotGame ? "AI Bot 🤖" : (isOnline ? lobbyP2NameText : "Player 2");
             } else {
                 winnerName = isOnline ? lobbyP1NameText : "Player 1";
+            }
+
+            let btn = document.getElementById('respawnBtn');
+            if (btn) {
+                if (isOnline && !isBotGame) {
+                    btn.innerText = "Rematch (Lobby)";
+                } else {
+                    btn.innerText = "Play Again";
+                }
             }
         }
 
@@ -2019,6 +2092,9 @@
                         document.getElementById('btnLobbyReady').style.backgroundColor = "var(--btn-bg)";
                         document.getElementById('btnLobbyReady').style.color = "var(--btn-text)";
                         window.myLobbyReady = false;
+                        
+                        window.startingLoadout = false;
+                        window.startingArena = false;
                     }
                     
                     document.getElementById('lobbyP1Name').innerText = data.p1?.name || "Player 1";
@@ -2148,6 +2224,9 @@
                             document.getElementById('btnLobbyReady').style.backgroundColor = "var(--btn-bg)";
                             document.getElementById('btnLobbyReady').style.color = "var(--btn-text)";
                             window.myLobbyReady = false;
+                            
+                            window.startingLoadout = false;
+                            window.startingArena = false;
                         }
                         
                         document.getElementById('lobbyP1Name').innerText = data.p1?.name || "Host";
