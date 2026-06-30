@@ -8,21 +8,21 @@
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
 
         :root {
-            --bg-color: #4a148c; /* Deep Purple */
+            --bg-color: #3b0a68; /* Deep Purple */
             --text-color: #ffffff;
-            --menu-bg: rgba(59, 10, 104, 0.9);
+            --menu-bg: rgba(42, 0, 77, 0.95);
             --gold-primary: #FFD700; /* Yellowish Gold */
             --gold-light: #FFF59D;
             --gold-dark: #B8860B;
-            --btn-bg: #2a004d; /* Darker Purple for buttons */
+            --btn-bg: #1e0036; /* Darker Purple for buttons */
             --btn-text: #FFD700;
         }
         
         body.dark-mode {
-            --bg-color: #1a002c;
+            --bg-color: #120024;
             --text-color: #f0f0f0;
-            --menu-bg: rgba(25, 0, 45, 0.92);
-            --btn-bg: #0f001e;
+            --menu-bg: rgba(18, 0, 36, 0.96);
+            --btn-bg: #0b0014;
         }
 
         body {
@@ -44,10 +44,10 @@
 
         canvas {
             display: block;
-            background: rgba(0, 0, 0, 0.35);
+            background: rgba(0, 0, 0, 0.4);
             border: 6px solid var(--gold-primary);
             border-radius: 12px;
-            box-shadow: 0 15px 45px rgba(255, 215, 0, 0.2);
+            box-shadow: 0 15px 45px rgba(255, 215, 0, 0.25);
             max-width: 100vw;
             max-height: 100vh;
             object-fit: contain;
@@ -60,16 +60,16 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: var(--menu-bg);
-            padding: 35px;
+            padding: 30px;
             border-radius: 20px;
             text-align: center;
             border: 3px solid var(--gold-primary);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 0 25px rgba(255, 215, 0, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 25px rgba(255, 215, 0, 0.15);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             display: none;
-            width: 440px;
-            max-height: 90vh;
+            width: 480px;
+            max-height: 92vh;
             overflow-y: auto;
             z-index: 20;
         }
@@ -78,7 +78,7 @@
         
         h1 {
             font-weight: 900;
-            font-size: 32px;
+            font-size: 36px;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--gold-primary);
@@ -100,7 +100,7 @@
             width: 100%;
             padding: 12px 15px;
             margin: 10px 0;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -109,7 +109,7 @@
             color: var(--btn-text);
             border: 2px solid var(--gold-primary);
             border-radius: 8px;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
 
@@ -130,7 +130,7 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 900;
             color: var(--gold-primary);
             background: var(--menu-bg);
@@ -139,7 +139,7 @@
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4);
             z-index: 10;
-            line-height: 1.5;
+            line-height: 1.4;
             backdrop-filter: blur(5px);
             user-select: none;
         }
@@ -153,7 +153,7 @@
         input[type="text"], input[type="email"], input[type="password"], select {
             flex: 1;
             padding: 12px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             font-family: 'Montserrat', sans-serif;
             border: 2px solid var(--gold-dark);
@@ -189,7 +189,7 @@
             border-radius: 8px; 
             border: 1px solid var(--gold-dark);
             cursor: pointer; 
-            font-size: 14px; 
+            font-size: 13px; 
             text-align: left; 
             line-height: 1.3;
             transition: all 0.2s ease;
@@ -205,6 +205,19 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
             margin-top: 10px;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+        .pagination-btn {
+            width: auto;
+            margin: 0;
+            padding: 4px 12px;
+            font-size: 12px;
         }
 
         hr {
@@ -227,8 +240,8 @@
             align-items: center;
         }
         .avatar-preview-container {
-            width: 150px;
-            height: 150px;
+            width: 140px;
+            height: 140px;
             background: rgba(0,0,0,0.4);
             border: 3px solid var(--gold-primary);
             border-radius: 50%;
@@ -237,6 +250,47 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+        }
+
+        /* Leaderboard Modal Styling */
+        .leaderboard-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .leaderboard-tab-btn {
+            flex: 1;
+            margin: 0;
+            padding: 8px;
+            font-size: 12px;
+        }
+        .leaderboard-tab-btn.tab-active {
+            background-color: var(--gold-primary);
+            color: #000;
+        }
+        .leaderboard-list {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--gold-dark);
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+            font-size: 13px;
+        }
+        .leaderboard-entry:last-child {
+            border-bottom: none;
+        }
+        .leaderboard-rank {
+            font-weight: 900;
+            color: var(--gold-primary);
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -248,7 +302,7 @@
     <div id="authScreen" class="ui-layer">
         <h2>Account Settings</h2>
         <div id="unauthDiv">
-            <p style="font-size: 14px; margin-bottom: 15px; color: var(--gold-light);">Sign in to save your score, track lobbies and custom avatars globally!</p>
+            <p style="font-size: 13px; margin-bottom: 15px; color: var(--gold-light);">Sign in to save scores to the global Leaderboard, track lobbies and custom avatars!</p>
             <input type="email" id="authEmail" placeholder="Email Address" style="width: 100%; margin-bottom: 10px;">
             <input type="password" id="authPassword" placeholder="Password" style="width: 100%; margin-bottom: 15px;">
             <button onclick="emailLogin()">Sign In</button>
@@ -258,7 +312,7 @@
             
             <!-- Google Login Button -->
             <button onclick="googleLogin()" style="background: #ffffff; color: #333333; border-color: #cccccc; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;">
-                <svg viewBox="0 0 24 24" width="20" height="20" style="display: inline-block; vertical-align: middle;">
+                <svg viewBox="0 0 24 24" width="18" height="18" style="display: inline-block; vertical-align: middle;">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
@@ -269,11 +323,11 @@
         </div>
         <div id="authProfileDiv" style="display: none;">
             <p>Welcome back,</p>
-            <h3 id="profileNameDisplay" style="color: var(--gold-primary); font-size: 24px; margin-bottom: 5px;">Player</h3>
-            <p id="profileEmailDisplay" style="font-size: 14px; opacity: 0.8; margin-top: 0;"></p>
+            <h3 id="profileNameDisplay" style="color: var(--gold-primary); font-size: 22px; margin-bottom: 5px;">Player</h3>
+            <p id="profileEmailDisplay" style="font-size: 13px; opacity: 0.8; margin-top: 0;"></p>
             <button onclick="authLogout()" style="background: #e74c3c; border-color: #c0392b;">Sign Out / Logout</button>
         </div>
-        <p id="authErrorText" style="color: #ff6b6b; font-weight: bold; margin-top: 15px; display: none; font-size: 14px;"></p>
+        <p id="authErrorText" style="color: #ff6b6b; font-weight: bold; margin-top: 15px; display: none; font-size: 13px;"></p>
         <hr>
         <button onclick="showScreen('menuScreen')">Close Account Settings</button>
     </div>
@@ -283,19 +337,20 @@
         <h1>Flapashoota</h1>
         
         <!-- Profile Widget -->
-        <div id="profileWidget" style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.4); border: 1px dashed var(--gold-primary); padding: 8px 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px;">
+        <div id="profileWidget" style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.4); border: 1px dashed var(--gold-primary); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 12px;">
             <span id="widgetName" style="font-weight: bold; color: var(--gold-light);">Loading account...</span>
-            <button onclick="showScreen('authScreen')" style="width: auto; margin: 0; padding: 4px 8px; font-size: 11px;">Account 🔑</button>
+            <button onclick="showScreen('authScreen')" style="width: auto; margin: 0; padding: 4px 8px; font-size: 10px;">Account 🔑</button>
         </div>
 
-        <input type="text" id="playerNameInput" placeholder="Enter Name" maxlength="12" style="width: 100%; text-align: center; margin-bottom: 15px;" onblur="this.value = sanitizeName(this.value)">
+        <input type="text" id="playerNameInput" placeholder="Enter Name" maxlength="12" style="width: 100%; text-align: center; margin-bottom: 12px;" onblur="this.value = sanitizeName(this.value)">
         
         <button onclick="startGame()">Play Pipes (Solo)</button>
         <button onclick="startLocalLoadout()">PvP Arena (Local 1v1)</button>
-        <button onclick="startMatchmakingQueue()" style="background-image: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; font-size: 16px;">Quick Match (Online/AI)</button>
+        <button onclick="startMatchmakingQueue()" style="background-image: linear-gradient(135deg, #FFD700 0%, #B8860B 100%); color: #000; font-size: 15px;">Quick Match (Online/AI)</button>
         <button onclick="showScreen('avatarScreen')">Customize Bird (Avatar)</button>
+        <button onclick="openLeaderboard()" style="background: #27ae60; border-color: #2ecc71; color: #fff;">Leaderboards 🏆</button>
         
-        <hr>
+        <hr style="margin: 12px 0;">
         
         <button onclick="hostOnlineGame()">Host Custom Online Lobby</button>
         <div class="online-controls">
@@ -303,7 +358,7 @@
             <button onclick="joinOnlineGame()">Join</button>
         </div>
 
-        <hr>
+        <hr style="margin: 12px 0;">
         <button onclick="showScreen('settingsScreen')">Settings</button>
     </div>
 
@@ -312,8 +367,22 @@
         <h2>Finding Match</h2>
         <div style="font-size: 48px; margin: 20px 0; animation: spin 2s linear infinite;">🛸</div>
         <p style="font-weight: bold; font-size: 18px;" id="queueTimerText">Searching... 0s</p>
-        <p style="color: var(--gold-light); font-size: 14px;" id="queueFallbackAlert">Looking for other players. Spawning AI Bot if empty in 10s.</p>
+        <p style="color: var(--gold-light); font-size: 13px;" id="queueFallbackAlert">Looking for other players. Spawning AI Bot if empty in 10s.</p>
         <button onclick="cancelMatchmakingQueue()" style="background: #e74c3c; border-color: #c0392b; color: #fff; margin-top: 20px;">Cancel Matchmaking</button>
+    </div>
+
+    <!-- LEADERBOARD SCREEN -->
+    <div id="leaderboardScreen" class="ui-layer">
+        <h2>Leaderboard 🏆</h2>
+        <div class="leaderboard-tabs">
+            <button class="leaderboard-tab-btn tab-active" id="btnTabDaily" onclick="setLeaderboardTab('daily')">Daily</button>
+            <button class="leaderboard-tab-btn" id="btnTabMonthly" onclick="setLeaderboardTab('monthly')">Monthly</button>
+            <button class="leaderboard-tab-btn" id="btnTabAllTime" onclick="setLeaderboardTab('alltime')">All Time</button>
+        </div>
+        <div class="leaderboard-list" id="leaderboardList">
+            <div style="text-align: center; padding-top: 30px; color: var(--gold-light);">Loading Scores...</div>
+        </div>
+        <button onclick="showScreen('menuScreen')">Back to Menu</button>
     </div>
 
     <!-- AVATAR EDITOR SCREEN WITH INDIVIDUAL HUE CONTROL -->
@@ -372,16 +441,22 @@
     <div id="loadoutScreen" class="ui-layer" style="width: 780px;">
         <h2>Choose Loadout & Map</h2>
         
-        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid var(--gold-dark); margin-bottom: 20px;">
+        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid var(--gold-dark); margin-bottom: 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <label style="font-weight: bold; color: var(--gold-primary); font-size: 15px; text-align: left;">SELECT ARENA MAP:</label>
-                <button onclick="randomizeMap()" style="width: auto; margin: 0; padding: 5px 15px; font-size: 12px; background: #3b0a68;">Randomize Map 🎲</button>
+                <label style="font-weight: bold; color: var(--gold-primary); font-size: 14px; text-align: left;">SELECT ARENA MAP:</label>
+                <button onclick="randomizeMap()" style="width: auto; margin: 0; padding: 4px 10px; font-size: 11px; background: #3b0a68;">Randomize Map 🎲</button>
             </div>
             <div id="mapGrid" class="map-grid"></div>
+            <!-- Pagination Controls for Map Decks -->
+            <div class="pagination-container">
+                <button class="pagination-btn" id="btnPrevMapPage" onclick="changeMapPage(-1)">◀ Prev Page</button>
+                <span style="font-size: 12px; font-weight: bold;" id="mapPageLabel">Page 1 / 2</span>
+                <button class="pagination-btn" id="btnNextMapPage" onclick="changeMapPage(1)">Next Page ▶</button>
+            </div>
         </div>
 
         <!-- Local 1v1 Loadout Fields -->
-        <div id="localLoadoutDiv" style="display: flex; gap: 30px; text-align: left;">
+        <div id="localLoadoutDiv" style="display: flex; gap: 20px; text-align: left;">
             <div style="flex: 1;" id="localP1Loadout"></div>
             <div style="flex: 1;" id="localP2Loadout"></div>
         </div>
@@ -389,14 +464,14 @@
         <!-- Online 1v1 Loadout Fields -->
         <div id="onlineLoadoutDiv" style="display: none; text-align: left;">
             <div id="myOnlineLoadout"></div>
-            <h4 style="margin-top: 25px; text-align: center; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 2px solid var(--gold-dark);">
-                Opponent Status: <br><span id="oppReadyText" style="color: var(--gold-primary); font-size: 24px; display: block; margin-top: 10px;">Choosing Weapon...</span>
+            <h4 style="margin-top: 15px; text-align: center; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 2px solid var(--gold-dark); margin-bottom: 10px;">
+                Opponent Status: <br><span id="oppReadyText" style="color: var(--gold-primary); font-size: 20px; display: block; margin-top: 5px;">Choosing Weapon...</span>
             </h4>
         </div>
 
-        <div style="margin-top: 15px; display: flex; gap: 15px;">
-            <button onclick="randomizeAllWeapons()" style="background: #8e44ad; border-color: #7d3c98; color: #fff;">Randomize Weapons 🎲</button>
-            <button onclick="cancelLobby()" style="background: #e74c3c; border-color: #c0392b; color: #fff;">Back to Menu</button>
+        <div style="margin-top: 10px; display: flex; gap: 10px;">
+            <button onclick="randomizeAllWeapons()" style="background: #8e44ad; border-color: #7d3c98; color: #fff; margin: 0;">Randomize Weapons 🎲</button>
+            <button onclick="cancelLobby()" style="background: #e74c3c; border-color: #c0392b; color: #fff; margin: 0;">Back to Menu</button>
         </div>
     </div>
 
@@ -457,7 +532,9 @@
     <!-- GAME OVER SCREEN -->
     <div id="deathScreen" class="ui-layer">
         <h2 style="font-size: 32px; color: var(--gold-primary); text-shadow: 2px 2px 5px rgba(0,0,0,0.5);">Game Over</h2>
-        <h3 id="deathWinnerDisplay" style="color: #fff; margin-bottom: 20px; font-size: 24px; font-weight: bold;"></h3>
+        <h3 id="deathWinnerDisplay" style="color: #fff; margin-bottom: 10px; font-size: 22px; font-weight: bold;"></h3>
+        <!-- Match Round Scores Display -->
+        <p id="matchScoresDisplay" style="font-size: 16px; color: var(--gold-light); font-weight: bold; margin-bottom: 20px;"></p>
         <button id="respawnBtn" onclick="handleRespawn()">Play Again</button>
         <button onclick="backToMenu()">Main Menu</button>
     </div>
@@ -472,7 +549,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc, deleteDoc, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
@@ -484,7 +561,6 @@
             if (state === 'avatar' || state === 'menu') updateAvatarPreview();
         };
         img.onerror = () => {
-            // If CORS load fails, retry without crossOrigin so it still displays perfectly on the canvas
             if (img.crossOrigin === "anonymous") {
                 console.warn("CORS fetch failed, falling back to standard loader for: " + src);
                 img.removeAttribute("crossOrigin");
@@ -629,7 +705,6 @@
         }
     };
 
-    // Game state tracking variables
     let isOnline = false;
     let isHost = false;
     let lobbyCode = "";
@@ -641,6 +716,17 @@
     let matchmakingSeconds = 0;
     let unsubscribeMatchmaking = null;
     let isBotGame = false;
+
+    // Multi-Round Tournament State Tracking
+    let p1RoundWins = 0;
+    let p2RoundWins = 0;
+    let matchOver = false;
+    let roundTransition = false;
+    let roundWinnerAlertText = "";
+    let roundTransitionEndTime = 0;
+
+    // Leaderboard Tabs State
+    let currentLeaderboardTab = 'daily';
 
     // Avatar Editor state configuration with multi-hue support
     let myAvatar = {
@@ -668,6 +754,9 @@
     window.randomizeMap = randomizeMap;
     window.startMatchmakingQueue = startMatchmakingQueue;
     window.cancelMatchmakingQueue = cancelMatchmakingQueue;
+    window.openLeaderboard = openLeaderboard;
+    window.setLeaderboardTab = setLeaderboardTab;
+    window.changeMapPage = changeMapPage;
 
     window.sanitizeName = function(name) {
         if (!name) return "Birdy" + Math.floor(Math.random() * 1000);
@@ -725,7 +814,7 @@
         ["Left Shoe", "👞"], ["Math Homework", "📝"], ["Confused Pigeon", "🐦"], ["Microwave Burrito", "🌯"],
         ["Uncooked Pasta", "🍝"], ["A Single Bean", "𫛘"], ["Existential Dread (Toy)", "👻"], ["Spicy Meatball", "🧆"],
         ["Used Tissue", "🤧"], ["Empty Toilet Paper Roll", "🧻"], ["Rusty Spoon", "🥄"], ["Lukewarm Soup", "🍲"],
-        ["Lint Roller", "🖌️"], ["Fly Swatter", ""], ["Plastic Flamingo", "🦩"], ["Garden Gnome", "🎅"],
+        ["Lint Roller", "🖌️"], ["Fly Swatter", "🪰"], ["Plastic Flamingo", "🦩"], ["Garden Gnome", "🎅"],
         ["Traffic Cone", "⚠️"], ["Bouncy Ball", "⚽"], ["Rubber Duck", "🦆"], ["Toy Train", "🚂"], ["Slightly Damp Sponge", "🧽"]
     ];
 
@@ -787,12 +876,18 @@
         'Gravity Chamber': {
             obs: [{x: 100, y: 350, w: 400, h: 100}, {x: 700, y: 350, w: 400, h: 100}],
             pipes: [{x: 50, y: 650, w: 60, h: 60, destX: 1150, destY: 100}, {x: 1100, y: 650, w: 60, h: 60, destX: 50, destY: 100}]
+        },
+        'Chrono Void': { // NEW MAP
+            obs: [{x: 100, y: 100, w: 100, h: 100}, {x: 1000, y: 100, w: 100, h: 100}, {x: 400, y: 350, w: 400, h: 80}, {x: 100, y: 600, w: 100, h: 100}, {x: 1000, y: 600, w: 100, h: 100}],
+            pipes: [{x: 550, y: 700, w: 100, h: 50, destX: 600, destY: 150}]
         }
     };
     
     let selectedMapName = 'Classic';
     let myMapVote = 'Classic';
     let oppMapVote = 'Classic';
+    let mapDeckPage = 0;
+    const mapsPerPage = 8;
 
     let lobbyP1NameText = "Player 1";
     let lobbyP2NameText = "Player 2";
@@ -812,10 +907,27 @@
         }
     };
 
+    function changeMapPage(direction) {
+        const totalMaps = Object.keys(MAPS).length;
+        const totalPages = Math.ceil(totalMaps / mapsPerPage);
+        mapDeckPage = (mapDeckPage + direction + totalPages) % totalPages;
+        renderMapGrid();
+    }
+
     function renderMapGrid() {
         const grid = document.getElementById('mapGrid');
         grid.innerHTML = '';
-        Object.keys(MAPS).forEach(m => {
+        const mapsKeys = Object.keys(MAPS);
+        const totalMaps = mapsKeys.length;
+        const totalPages = Math.ceil(totalMaps / mapsPerPage);
+        
+        document.getElementById('mapPageLabel').innerText = `Page ${mapDeckPage + 1} / ${totalPages}`;
+
+        const startIndex = mapDeckPage * mapsPerPage;
+        const endIndex = Math.min(startIndex + mapsPerPage, totalMaps);
+
+        for (let i = startIndex; i < endIndex; i++) {
+            const m = mapsKeys[i];
             let isMyVote = false;
             let isOppVote = false;
             let isSelectedLocally = false;
@@ -835,21 +947,21 @@
                 if (isMyVote && isOppVote) {
                     border = '2px solid #2ecc71';
                     bg = 'rgba(46, 204, 113, 0.2)';
-                    voteText = '<div style="color:#2ecc71; font-size:10px; font-weight:bold; margin-top:2px;">BOTH VOTED</div>';
+                    voteText = '<div style="color:#2ecc71; font-size:9px; font-weight:bold; margin-top:2px;">BOTH VOTED</div>';
                 } else if (isMyVote) {
                     border = '2px solid var(--gold-primary)';
                     bg = 'rgba(255, 215, 0, 0.2)';
-                    voteText = '<div style="color:var(--gold-primary); font-size:10px; font-weight:bold; margin-top:2px;">YOUR VOTE</div>';
+                    voteText = '<div style="color:var(--gold-primary); font-size:9px; font-weight:bold; margin-top:2px;">YOUR VOTE</div>';
                 } else if (isOppVote) {
                     border = '2px solid #3498db';
                     bg = 'rgba(52, 152, 219, 0.2)';
-                    voteText = '<div style="color:#3498db; font-size:10px; font-weight:bold; margin-top:2px;">OPP VOTE</div>';
+                    voteText = '<div style="color:#3498db; font-size:9px; font-weight:bold; margin-top:2px;">OPP VOTE</div>';
                 }
             } else {
                 if (isSelectedLocally) {
                     border = '2px solid var(--gold-primary)';
                     bg = 'rgba(255, 215, 0, 0.2)';
-                    voteText = '<div style="color:var(--gold-primary); font-size:10px; font-weight:bold; margin-top:2px;">SELECTED</div>';
+                    voteText = '<div style="color:var(--gold-primary); font-size:9px; font-weight:bold; margin-top:2px;">SELECTED</div>';
                 }
             }
             
@@ -862,14 +974,14 @@
             });
 
             grid.innerHTML += `
-            <div onclick="selectMap('${m}')" style="cursor: pointer; border: ${border}; background: ${bg}; padding: 5px; border-radius: 6px; text-align: center; transition: 0.2s;">
+            <div onclick="selectMap('${m}')" style="cursor: pointer; border: ${border}; background: ${bg}; padding: 4px; border-radius: 6px; text-align: center; transition: 0.2s;">
                 <div style="font-size: 10px; font-weight: bold; color: var(--gold-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${m}</div>
                 <div style="position: relative; width: 100%; height: 35px; background: rgba(0,0,0,0.8); border-radius: 4px; margin-top: 5px; overflow: hidden;">
                     ${obsHTML}
                 </div>
                 ${voteText}
             </div>`;
-        });
+        }
     }
 
     let loadoutData = {
@@ -899,6 +1011,10 @@
             window.syncOnlineLoadout();
         } else {
             if (loadoutData.p1.ready && loadoutData.p2.ready) {
+                p1RoundWins = 0;
+                p2RoundWins = 0;
+                matchOver = false;
+                roundTransition = false;
                 enterArenaLocal();
             }
         }
@@ -924,7 +1040,7 @@
             html += `<label class="weapon-option">
                 <input type="radio" name="${player}Wep" value="${w}" onchange="selectWeapon('${player}', '${w}')" ${checked} ${disabled}> 
                 <div>
-                    <strong style="font-size: 15px; color: var(--gold-primary);">${weaponStats[w].emoji} ${w}</strong><br>
+                    <strong style="font-size: 14px; color: var(--gold-primary);">${weaponStats[w].emoji} ${w}</strong><br>
                     <small style="color: var(--text-color); font-weight: bold; text-transform: uppercase;">ABILITY: ${ab}</small>
                 </div>
             </label>`;
@@ -967,6 +1083,8 @@
     function randomizeMap() {
         const mapsList = Object.keys(MAPS);
         const randMap = mapsList[Math.floor(Math.random() * mapsList.length)];
+        const index = mapsList.indexOf(randMap);
+        mapDeckPage = Math.floor(index / mapsPerPage);
         selectMap(randMap);
     }
 
@@ -1012,7 +1130,7 @@
 
         let imgSize = size * 2.8;
 
-        // 1. Draw custom bird body with its specific Hue rotation (filter nested with save/restore for complete isolation)
+        // 1. Draw custom bird body with its specific Hue rotation
         avatarCtx.save();
         if (imgBirdBody.complete && imgBirdBody.naturalWidth > 0) {
             avatarCtx.filter = `hue-rotate(${settings.bodyHue ?? 0}deg) saturate(1.2)`;
@@ -1229,6 +1347,95 @@
         drawBirdToCtx(ctx, x, y, size, activeAvatar, vy, direction);
     }
 
+    async function openLeaderboard() {
+        showScreen('leaderboardScreen');
+        setLeaderboardTab(currentLeaderboardTab);
+    }
+
+    async function setLeaderboardTab(tabName) {
+        currentLeaderboardTab = tabName;
+        document.querySelectorAll('.leaderboard-tab-btn').forEach(btn => btn.classList.remove('tab-active'));
+        if (tabName === 'daily') document.getElementById('btnTabDaily').classList.add('tab-active');
+        if (tabName === 'monthly') document.getElementById('btnTabMonthly').classList.add('tab-active');
+        if (tabName === 'alltime') document.getElementById('btnTabAllTime').classList.add('tab-active');
+
+        const listDiv = document.getElementById('leaderboardList');
+        listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: var(--gold-light); font-weight: bold;">Loading Scores...</div>`;
+
+        try {
+            const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboards');
+            // Fetch top 100 overall to allow dynamic robust sorting and filtering client-side
+            const q = query(scoresRef, orderBy('score', 'desc'), limit(100));
+            const querySnapshot = await getDocs(q);
+            
+            let scoresList = [];
+            querySnapshot.forEach((docSnap) => {
+                scoresList.push(docSnap.data());
+            });
+
+            // Filter client-side
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const currentMonthStr = today.toISOString().slice(0, 7);
+
+            let filteredList = [];
+            if (tabName === 'daily') {
+                filteredList = scoresList.filter(item => item.dateString === todayStr);
+            } else if (tabName === 'monthly') {
+                filteredList = scoresList.filter(item => item.monthString === currentMonthStr);
+            } else {
+                filteredList = scoresList; // All time
+            }
+
+            // Slice to top 15 results
+            filteredList = filteredList.slice(0, 15);
+
+            listDiv.innerHTML = '';
+            if (filteredList.length === 0) {
+                listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: var(--gold-light); font-size: 13px;">No scores submitted yet!</div>`;
+                return;
+            }
+
+            filteredList.forEach((entry, idx) => {
+                listDiv.innerHTML += `
+                    <div class="leaderboard-entry">
+                        <div>
+                            <span class="leaderboard-rank">#${idx + 1}</span>
+                            <span style="font-weight: bold;">${entry.name}</span>
+                        </div>
+                        <span style="font-weight: 900; color: var(--gold-primary);">${entry.score} pts</span>
+                    </div>
+                `;
+            });
+
+        } catch (e) {
+            console.error("Leaderboard read failed: ", e);
+            listDiv.innerHTML = `<div style="text-align: center; padding-top: 35px; color: #ff6b6b; font-size: 13px;">Error fetching leaderboards.</div>`;
+        }
+    }
+
+    async function submitScoreToLeaderboard(finalScore) {
+        if (finalScore <= 0) return;
+        const playerDisplayName = document.getElementById('playerNameInput').value.trim() || "GuestPlayer";
+        const today = new Date();
+        const dateString = today.toISOString().split('T')[0];
+        const monthString = today.toISOString().slice(0, 7);
+
+        const recordId = currentUser ? currentUser.uid + "_" + Date.now() : "guest_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+        try {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'leaderboards', recordId), {
+                name: playerDisplayName,
+                score: finalScore,
+                dateString: dateString,
+                monthString: monthString,
+                timestamp: Date.now()
+            });
+            showToast("High score uploaded successfully! Check the boards!");
+        } catch (e) {
+            console.error("Score submission error: ", e);
+        }
+    }
+
     async function startMatchmakingQueue() {
         if (!auth.currentUser) {
             showToast("Connecting to service... Please wait.");
@@ -1258,11 +1465,15 @@
                 await updateDoc(docRef, { 
                     state: 'playing',
                     map: Object.keys(MAPS)[Math.floor(Math.random() * Object.keys(MAPS).length)],
+                    p1RoundWins: 0,
+                    p2RoundWins: 0,
+                    matchOver: false,
                     p2: { 
                         name: pName, 
                         readyLobby: true, 
                         weapon: allWeaponTypes[Math.floor(Math.random() * allWeaponTypes.length)],
-                        avatar: myAvatar 
+                        avatar: myAvatar,
+                        rematchRequested: false
                     }
                 });
 
@@ -1275,7 +1486,16 @@
                 const docRef = getLobbyRef(lobbyCode);
                 await setDoc(docRef, { 
                     state: 'waiting',
-                    p1: { name: pName, readyLobby: true, avatar: myAvatar, weapon: allWeaponTypes[Math.floor(Math.random() * allWeaponTypes.length)] }
+                    p1RoundWins: 0,
+                    p2RoundWins: 0,
+                    matchOver: false,
+                    p1: { 
+                        name: pName, 
+                        readyLobby: true, 
+                        avatar: myAvatar, 
+                        weapon: allWeaponTypes[Math.floor(Math.random() * allWeaponTypes.length)],
+                        rematchRequested: false
+                    }
                 });
 
                 await setDoc(lobbyMatchmakingCollectionRef, { openLobby: lobbyCode });
@@ -1336,6 +1556,11 @@
             glasses: ['shades', 'monocle', 'eyepatch', 'blush', 'none'][Math.floor(Math.random() * 5)],
             tail: ['classic', 'fancy', 'feathered'][Math.floor(Math.random() * 3)]
         };
+
+        p1RoundWins = 0;
+        p2RoundWins = 0;
+        matchOver = false;
+        roundTransition = false;
 
         projectiles = [];
         state = 'arena';
@@ -1418,8 +1643,8 @@
             const name1 = isOnline ? lobbyP1NameText : "Player 1";
             const name2 = isBotGame ? "AI Bot 🤖" : (isOnline ? lobbyP2NameText : "Player 2");
             document.getElementById('hud').innerHTML = 
-                `${name1} HP: ${Math.max(0, p1.hp)} [Wep: ${wep1}]<br>` + 
-                `${name2} HP: ${Math.max(0, p2.hp)} [Wep: ${wep2}]`;
+                `${name1} HP: ${Math.max(0, p1.hp)} [Wep: ${wep1}] - Round Wins: ${p1RoundWins}<br>` + 
+                `${name2} HP: ${Math.max(0, p2.hp)} [Wep: ${wep2}] - Round Wins: ${p2RoundWins}`;
         } else {
             document.getElementById('hud').innerHTML = `Score: ${score}`;
         }
@@ -1430,19 +1655,16 @@
             if (isBotGame) {
                 triggerBotMatchmakingFallback();
             } else if (isOnline) {
-                window.myLobbyReady = false;
-                document.getElementById('btnLobbyReady').innerText = "Ready Up!";
-                document.getElementById('btnLobbyReady').style.backgroundColor = "var(--btn-bg)";
-                document.getElementById('btnLobbyReady').style.color = "var(--btn-text)";
-                
-                window.startingLoadout = false;
-                window.startingArena = false;
-                
-                updateDoc(getLobbyRef(lobbyCode), { 
-                    state: 'lobby',
-                    'p1.readyLobby': false,
-                    'p2.readyLobby': false
-                }).catch(e=>console.error(e));
+                // Online Rematch requested
+                let myRole = isHost ? 'p1' : 'p2';
+                showToast("Requested Rematch. Waiting for opponent...");
+                document.getElementById('respawnBtn').disabled = true;
+                document.getElementById('respawnBtn').innerText = "Waiting for Opponent...";
+
+                updateDoc(getLobbyRef(lobbyCode), {
+                    [`${myRole}.rematchRequested`]: true
+                }).catch(e => console.error(e));
+
             } else {
                 startLocalLoadout();
             }
@@ -1481,7 +1703,10 @@
         frameCount = 0;
         
         let btn = document.getElementById('respawnBtn');
-        if(btn) btn.innerText = "Play Again";
+        if(btn) {
+            btn.disabled = false;
+            btn.innerText = "Play Again";
+        }
 
         showScreen(null);
         updateHUD();
@@ -1503,6 +1728,9 @@
             if (bird.x + bird.size > p.x && bird.x - bird.size < p.x + pipeWidth) {
                 if (bird.y - bird.size < p.top || bird.y + bird.size > p.top + pipeGap) {
                     state = 'menu';
+                    submitScoreToLeaderboard(score);
+                    document.getElementById('deathWinnerDisplay').innerText = `You crashed! Final Score: ${score}`;
+                    document.getElementById('matchScoresDisplay').innerText = "";
                     showScreen('deathScreen');
                 }
             }
@@ -1518,6 +1746,9 @@
 
         if (bird.y > canvas.height || bird.y < 0) {
             state = 'menu';
+            submitScoreToLeaderboard(score);
+            document.getElementById('deathWinnerDisplay').innerText = `You flew out of bounds! Final Score: ${score}`;
+            document.getElementById('matchScoresDisplay').innerText = "";
             showScreen('deathScreen');
         }
     }
@@ -1552,6 +1783,7 @@
         loadoutData.p2.weapon = loadoutData.p2.choices[0];
         
         selectedMapName = 'Classic';
+        mapDeckPage = 0;
         renderMapGrid();
         updateLoadoutUI();
     }
@@ -1664,7 +1896,7 @@
     }
 
     function updateAIBot() {
-        if (roundOver) {
+        if (roundOver || roundTransition) {
             p2.vx *= 0.95;
             p2.vy += GRAVITY; p2.y += p2.vy; p2.x += p2.vx;
             return;
@@ -1726,23 +1958,89 @@
         }
     }
 
-    function updateArena() {
-        if (!roundOver && (p1.hp <= 0 || p2.hp <= 0)) {
+    function triggerNextRound() {
+        p1.hp = 100;
+        p2.hp = 100;
+        p1.x = 200;
+        p1.y = 250;
+        p1.vx = 0;
+        p1.vy = 0;
+        p2.x = 1000;
+        p2.y = 250;
+        p2.vx = 0;
+        p2.vy = 0;
+        projectiles = [];
+        roundOver = false;
+        roundTransition = false;
+        updateHUD();
+    }
+
+    function processRoundEnd(roundWinner) {
+        if (roundWinner === 'p1') {
+            p1RoundWins++;
+            roundWinnerAlertText = (isOnline ? lobbyP1NameText : "Player 1") + " wins the round!";
+        } else {
+            p2RoundWins++;
+            roundWinnerAlertText = (isBotGame ? "AI Bot 🤖" : (isOnline ? lobbyP2NameText : "Player 2")) + " wins the round!";
+        }
+
+        updateHUD();
+
+        // Check overall tournament victor condition (First to 3 round wins)
+        if (p1RoundWins >= 3 || p2RoundWins >= 3) {
+            matchOver = true;
             roundOver = true;
             roundOverTime = Date.now();
-            if (p1.hp <= 0) {
-                winnerName = isBotGame ? "AI Bot 🤖" : (isOnline ? lobbyP2NameText : "Player 2");
-            } else {
+            
+            if (p1RoundWins >= 3) {
                 winnerName = isOnline ? lobbyP1NameText : "Player 1";
+            } else {
+                winnerName = isBotGame ? "AI Bot 🤖" : (isOnline ? lobbyP2NameText : "Player 2");
             }
 
             let btn = document.getElementById('respawnBtn');
             if (btn) {
-                if (isOnline && !isBotGame) {
-                    btn.innerText = "Rematch (Lobby)";
+                btn.disabled = false;
+                if (isOnline) {
+                    btn.innerText = "Request Rematch";
                 } else {
                     btn.innerText = "Play Again";
                 }
+            }
+
+            // Sync overall matchOver flag to firestore if online
+            if (isOnline && isHost) {
+                updateDoc(getLobbyRef(lobbyCode), {
+                    matchOver: true,
+                    p1RoundWins: p1RoundWins,
+                    p2RoundWins: p2RoundWins
+                }).catch(e=>console.error(e));
+            }
+        } else {
+            // Initiate round intermission transition (3 seconds)
+            roundTransition = true;
+            roundTransitionEndTime = Date.now() + 3000;
+        }
+    }
+
+    function updateArena() {
+        // Handle transitioning between rounds
+        if (roundTransition) {
+            if (Date.now() > roundTransitionEndTime) {
+                triggerNextRound();
+            }
+            // Keep physics moving minimally
+            p1.vx *= 0.95; p2.vx *= 0.95;
+            p1.vy += GRAVITY; p1.y += p1.vy; p1.x += p1.vx;
+            p2.vy += GRAVITY; p2.y += p2.vy; p2.x += p2.vx;
+            return;
+        }
+
+        if (!roundOver && !matchOver) {
+            if (p1.hp <= 0) {
+                processRoundEnd('p2');
+            } else if (p2.hp <= 0) {
+                processRoundEnd('p1');
             }
         }
 
@@ -1820,9 +2118,10 @@
             }
         }
 
-        if (roundOver && Date.now() - roundOverTime >= 3000) {
+        if (matchOver && Date.now() - roundOverTime >= 3000) {
             state = 'menu';
-            document.getElementById('deathWinnerDisplay').innerText = `${winnerName} Won!`;
+            document.getElementById('deathWinnerDisplay').innerText = `${winnerName} Wins the Match!`;
+            document.getElementById('matchScoresDisplay').innerText = `Final Score: ${p1RoundWins} - ${p2RoundWins}`;
             showScreen('deathScreen');
         }
 
@@ -1976,9 +2275,26 @@
             ctx.fillText(`P2: Arrows Move | Up Arrow Flap | ${kb.p2.down.replace('Arrow','')} Phase | Enter Shoot | ${kb.p2.special.replace('Key','')} Ability`, 10, canvas.height - 20);
         }
 
-        if (roundOver) {
+        // Draw Intermission banner
+        if (roundTransition) {
             ctx.save();
-            ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "var(--gold-primary)";
+            ctx.font = "bold 42px Montserrat, sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(roundWinnerAlertText, canvas.width / 2, canvas.height / 2 - 30);
+            ctx.font = "bold 24px Montserrat, sans-serif";
+            ctx.fillStyle = "#ffffff";
+            let timeLeft = Math.ceil((roundTransitionEndTime - Date.now()) / 1000);
+            ctx.fillText(`Next round begins in ${timeLeft}s...`, canvas.width / 2, canvas.height / 2 + 30);
+            ctx.restore();
+        }
+
+        if (matchOver) {
+            ctx.save();
+            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             ctx.fillStyle = "var(--gold-primary)";
@@ -1987,8 +2303,12 @@
             ctx.textBaseline = "middle";
             ctx.strokeStyle = "#120024";
             ctx.lineWidth = 8;
-            ctx.strokeText(`${winnerName} Won!`, canvas.width / 2, canvas.height / 2);
-            ctx.fillText(`${winnerName} Won!`, canvas.width / 2, canvas.height / 2);
+            ctx.strokeText(`${winnerName} Wins the Match!`, canvas.width / 2, canvas.height / 2 - 20);
+            ctx.fillText(`${winnerName} Wins the Match!`, canvas.width / 2, canvas.height / 2 - 20);
+
+            ctx.font = "bold 28px Montserrat, sans-serif";
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(`Score: ${p1RoundWins} - ${p2RoundWins}`, canvas.width / 2, canvas.height / 2 + 40);
             ctx.restore();
         }
     }
@@ -2073,7 +2393,10 @@
             const docRef = getLobbyRef(lobbyCode);
             await setDoc(docRef, { 
                 state: 'waiting',
-                p1: { name: pName, readyLobby: false, mapVote: 'Classic', avatar: myAvatar }
+                p1RoundWins: 0,
+                p2RoundWins: 0,
+                matchOver: false,
+                p1: { name: pName, readyLobby: false, mapVote: 'Classic', avatar: myAvatar, rematchRequested: false }
             });
             
             window.startingArena = false;
@@ -2122,6 +2445,7 @@
                         
                         myMapVote = 'Classic';
                         oppMapVote = 'Classic';
+                        mapDeckPage = 0;
                         renderMapGrid(); 
                         
                         loadoutData.p1 = { choices: getRandomWeapons(3), rerolls: 2, ready: false, weapon: '', avatar: myAvatar };
@@ -2154,12 +2478,16 @@
                         let finalMap = Math.random() < 0.5 ? p1Vote : p2Vote;
                         if (p1Vote === p2Vote) finalMap = p1Vote;
                         
-                        updateDoc(docRef, { state: 'playing', map: finalMap }).catch(e=>console.error(e));
+                        updateDoc(docRef, { state: 'playing', map: finalMap, p1RoundWins: 0, p2RoundWins: 0, matchOver: false }).catch(e=>console.error(e));
                     }
                 }
 
                 if (data.state === 'playing' && state === 'loadout') {
                     selectedMapName = data.map || 'Classic';
+                    p1RoundWins = 0;
+                    p2RoundWins = 0;
+                    matchOver = false;
+                    roundTransition = false;
                     enterArenaOnline(data);
                 }
 
@@ -2178,6 +2506,39 @@
                         if (data.p2.megaShot !== undefined) p2.megaShot = data.p2.megaShot;
                         if (data.p2.phasing !== undefined) p2.phasing = data.p2.phasing;
                         if (data.p2.avatar) loadoutData.p2.avatar = data.p2.avatar;
+                    } else if (!isHost && data.p1) {
+                        // Handle client mirroring host score tallies directly
+                        if (data.p1RoundWins !== undefined) p1RoundWins = data.p1RoundWins;
+                        if (data.p2RoundWins !== undefined) p2RoundWins = data.p2RoundWins;
+                        if (data.matchOver !== undefined) matchOver = data.matchOver;
+                    }
+                }
+
+                if (data.p1?.rematchRequested && data.p2?.rematchRequested) {
+                    if (isHost) {
+                        // Host handles rebooting matchmaking document state back to loadout selection
+                        updateDoc(docRef, {
+                            state: 'loadout',
+                            p1RoundWins: 0,
+                            p2RoundWins: 0,
+                            matchOver: false,
+                            'p1.ready': false,
+                            'p2.ready': false,
+                            'p1.rematchRequested': false,
+                            'p2.rematchRequested': false
+                        }).then(() => {
+                            let btn = document.getElementById('respawnBtn');
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerText = "Request Rematch";
+                            }
+                        }).catch(e=>console.error(e));
+                    } else {
+                        let btn = document.getElementById('respawnBtn');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerText = "Request Rematch";
+                        }
                     }
                 }
             }, (err) => console.error("Lobby dynamic monitor error: ", err));
@@ -2208,7 +2569,7 @@
             if (snap.exists() && (snap.data().state === 'waiting' || snap.data().state === 'lobby')) {
                 await updateDoc(docRef, { 
                     state: 'lobby',
-                    p2: { name: pName, readyLobby: false, mapVote: 'Classic', avatar: myAvatar }
+                    p2: { name: pName, readyLobby: false, mapVote: 'Classic', avatar: myAvatar, rematchRequested: false }
                 });
                 
                 unsubscribeLobby = onSnapshot(docRef, (snap) => {
@@ -2249,6 +2610,7 @@
                             
                             myMapVote = 'Classic';
                             oppMapVote = 'Classic';
+                            mapDeckPage = 0;
                             renderMapGrid(); 
                             
                             loadoutData.p1 = { choices: getRandomWeapons(3), rerolls: 2, ready: false, weapon: '', avatar: data.p1?.avatar || null };
@@ -2277,6 +2639,10 @@
 
                     if (data.state === 'playing' && state === 'loadout') {
                         selectedMapName = data.map || 'Classic';
+                        p1RoundWins = 0;
+                        p2RoundWins = 0;
+                        matchOver = false;
+                        roundTransition = false;
                         enterArenaOnline(data);
                     }
 
@@ -2295,6 +2661,19 @@
                             if (data.p1.megaShot !== undefined) p1.megaShot = data.p1.megaShot;
                             if (data.p1.phasing !== undefined) p1.phasing = data.p1.phasing;
                             if (data.p1.avatar) loadoutData.p1.avatar = data.p1.avatar;
+                        } else if (isHost && data.p2) {
+                            // Host handles process round end checks directly
+                            if (data.p1RoundWins !== undefined) p1RoundWins = data.p1RoundWins;
+                            if (data.p2RoundWins !== undefined) p2RoundWins = data.p2RoundWins;
+                            if (data.matchOver !== undefined) matchOver = data.matchOver;
+                        }
+                    }
+
+                    if (data.p1?.rematchRequested && data.p2?.rematchRequested) {
+                        let btn = document.getElementById('respawnBtn');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerText = "Request Rematch";
                         }
                     }
                 }, (err) => console.error("Client game loop error: ", err));
@@ -2325,6 +2704,11 @@
         if (data.p1?.avatar) loadoutData.p1.avatar = data.p1.avatar;
         if (data.p2?.avatar) loadoutData.p2.avatar = data.p2.avatar;
 
+        p1RoundWins = 0;
+        p2RoundWins = 0;
+        matchOver = false;
+        roundTransition = false;
+
         projectiles = [];
         state = 'arena';
         showScreen(null);
@@ -2338,10 +2722,14 @@
         const docRef = getLobbyRef(lobbyCode);
         syncInterval = setInterval(() => {
             if (state !== 'arena') return;
+            // Write coordinates and state updates to Firebase database real-time
             const payload = isHost ? {
-                p1: { x: p1.x, y: p1.y, vx: p1.vx, vy: p1.vy, weapon: p1.weapon, hp: p1.hp, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: p1.shieldEndTime, megaShot: p1.megaShot, phasing: p1.phasing, avatar: myAvatar }
+                p1: { x: p1.x, y: p1.y, vx: p1.vx, vy: p1.vy, weapon: p1.weapon, hp: p1.hp, fireTs: p1.fireTs, aimAngle: p1.aimAngle, shieldEndTime: p1.shieldEndTime, megaShot: p1.megaShot, phasing: p1.phasing, avatar: myAvatar, rematchRequested: false },
+                p1RoundWins: p1RoundWins,
+                p2RoundWins: p2RoundWins,
+                matchOver: matchOver
             } : {
-                p2: { x: p2.x, y: p2.y, vx: p2.vx, vy: p2.vy, weapon: p2.weapon, hp: p2.hp, fireTs: p2.fireTs, aimAngle: p2.aimAngle, shieldEndTime: p2.shieldEndTime, megaShot: p2.megaShot, phasing: p2.phasing, avatar: myAvatar }
+                p2: { x: p2.x, y: p2.y, vx: p2.vx, vy: p2.vy, weapon: p2.weapon, hp: p2.hp, fireTs: p2.fireTs, aimAngle: p2.aimAngle, shieldEndTime: p2.shieldEndTime, megaShot: p2.megaShot, phasing: p2.phasing, avatar: myAvatar, rematchRequested: false }
             };
             updateDoc(docRef, payload).catch(e => console.error(e));
         }, 50);
@@ -2374,7 +2762,7 @@
         }
 
         if (state === 'arena') {
-            if (roundOver) return;
+            if (roundOver || roundTransition) return;
             if (isBotGame) {
                 if (e.code === 'Space' || e.code === kb.p1.jump) p1.vy = JUMP_FORCE;
                 if (e.code === kb.p1.special) useAbility('p1');
@@ -2403,7 +2791,7 @@
     window.addEventListener('mousedown', (e) => {
         if (state === 'flappy') bird.vy = JUMP_FORCE;
         if (state === 'arena' && e.button === 0) {
-            if (roundOver) return;
+            if (roundOver || roundTransition) return;
             if (isBotGame) {
                 fireWeapon('p1');
             } else if (!isOnline) {
@@ -2425,7 +2813,7 @@
                 frameCount++; updateFlappy(); drawFlappy();
             } else if (state === 'arena') {
                 updateArena(); drawArena();
-            } else if (state === 'menu' || state === 'loadout' || state === 'lobby' || state === 'matchmaking' || state === 'avatar' || state === 'auth') {
+            } else if (state === 'menu' || state === 'loadout' || state === 'lobby' || state === 'matchmaking' || state === 'avatar' || state === 'auth' || state === 'leaderboard') {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         }
